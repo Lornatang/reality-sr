@@ -57,7 +57,7 @@ class EnhancedSpatialAttention(nn.Module):
         conv_4 = self.conv_4(conv_3_1 + cross_conv)
         conv_4 = self.sigmoid(conv_4)
 
-        return x * conv_4
+        return torch.mul(conv_4, x)
 
 
 class ResidualConvBlock(nn.Module):

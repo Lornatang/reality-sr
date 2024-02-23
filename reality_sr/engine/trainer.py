@@ -28,9 +28,8 @@ from reality_sr.data.paired_image_dataset import PairedImageDataset
 from reality_sr.data.transforms import random_crop_torch, random_rotate_torch, random_vertically_flip_torch, random_horizontally_flip_torch
 from reality_sr.layers.ema import ModelEMA
 from reality_sr.models.discriminator_for_unet import discriminator_for_unet
-from reality_sr.models.edsrnet import edsrnet_x2, edsrnet_x4
+from reality_sr.models import *
 from reality_sr.models.losses import FeatureLoss
-from reality_sr.models.rrdbnet import rrdbnet_x4
 from reality_sr.utils.checkpoint import load_state_dict, save_checkpoint, strip_optimizer
 from reality_sr.utils.diffjepg import DiffJPEG
 from reality_sr.utils.envs import select_device, set_seed_everything
@@ -283,6 +282,10 @@ class Trainer:
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                  channels=self.model_config_dict.G.get("CHANNELS", 64),
                                  num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+        elif model_g_type == "rfdnet_x4":
+            g_model = rfdnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                channels=self.model_config_dict.G.get("CHANNELS", 50))
         else:
             raise NotImplementedError(f"Model type `{model_g_type}` is not implemented.")
         g_model = g_model.to(self.device)
