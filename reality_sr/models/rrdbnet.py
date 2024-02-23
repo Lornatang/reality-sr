@@ -93,8 +93,8 @@ class RRDBNet(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         conv_1 = self.conv_1(x)
         out = self.trunk(conv_1)
-        conv_2 = self.conv_2(out)
-        out = torch.add(conv_1, conv_2)
+        out = self.conv_2(out)
+        out = torch.add(conv_1, out)
 
         if self.upscale_factor == 2:
             out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))

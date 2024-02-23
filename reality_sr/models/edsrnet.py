@@ -11,12 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-import math
 import torch
 from torch import Tensor, nn
+from torch.nn import functional as F_torch
 
 from reality_sr.layers.blocks import ResidualConvBlock
-from reality_sr.layers.upsample import PixShuffleUpsampleBlock
 from reality_sr.utils.ops import initialize_weights
 
 __all__ = [
@@ -57,29 +56,69 @@ class EDSRNet(nn.Module):
         # Second layer
         self.conv_2 = nn.Conv2d(channels, channels, 3, stride=1, padding=1)
 
-        # Up-sampling layers
-        up_sampling = []
-        if upscale_factor == 2 or upscale_factor == 4 or upscale_factor == 8:
-            for _ in range(int(math.log(upscale_factor, 2))):
-                up_sampling.append(PixShuffleUpsampleBlock(64, 2))
-        elif upscale_factor == 3:
-            up_sampling.append(PixShuffleUpsampleBlock(64, 3))
-        self.up_sampling = nn.Sequential(*up_sampling)
+        # Up-sampling convolutional layer
+        if self.upscale_factor == 2 or self.upscale_factor == 3:
+            self.up_sampling_1 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+        elif self.upscale_factor == 4:
+            self.up_sampling_1 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+            self.up_sampling_2 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+        elif self.upscale_factor == 8:
+            self.up_sampling_1 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+            self.up_sampling_2 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+            self.up_sampling_3 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
 
-        # Final output layer
-        self.conv_3 = nn.Conv2d(channels, out_channels, (3, 3), (1, 1), (1, 1))
+        # Output layer
+        self.conv_3 = nn.Sequential(
+            nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+            nn.LeakyReLU(0.2, True),
+        )
+
+        # Output layer
+        self.conv_4 = nn.Conv2d(channels, out_channels, (3, 3), (1, 1), (1, 1))
 
         initialize_weights(self.modules())
 
     def forward(self, x: Tensor) -> Tensor:
         out = x.sub_(self.mean).mul_(255.)
 
-        out1 = self.conv_1(out)
-        out = self.trunk(out1)
+        conv_1 = self.conv_1(out)
+        out = self.trunk(conv_1)
         out = self.conv_2(out)
-        out = torch.add(out, out1)
-        out = self.up_sampling(out)
+        out = torch.add(conv_1, out)
+
+        if self.upscale_factor == 2:
+            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+        elif self.upscale_factor == 3:
+            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=3, mode="nearest"))
+        elif self.upscale_factor == 4:
+            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+            out = self.up_sampling_2(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+        elif self.upscale_factor == 8:
+            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+            out = self.up_sampling_2(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+            out = self.up_sampling_3(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+
         out = self.conv_3(out)
+        out = self.conv_4(out)
+
         out = out.div_(255.).add_(self.mean)
         return torch.clamp_(out, 0.0, 1.0)
 

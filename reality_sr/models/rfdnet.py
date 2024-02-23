@@ -13,13 +13,14 @@
 # ==============================================================================
 import torch
 from torch import Tensor, nn
+from torch.nn import functional as F_torch
 
 from reality_sr.layers.blocks import ResidualFeatureDistillationBlock
 from reality_sr.utils.ops import initialize_weights
 
 __all__ = [
     "ResidualFeatureDistillationNet",
-    "rfdnet_x4",
+    "rfdnet_x2", "rfdnet_x3", "rfdnet_x4", "rfdnet_x8",
 ]
 
 
@@ -30,7 +31,7 @@ class ResidualFeatureDistillationNet(nn.Module):
 
     def __init__(self, in_channels: int = 3, out_channels: int = 3, channels: int = 50, upscale_factor: int = 4) -> None:
         super(ResidualFeatureDistillationNet, self).__init__()
-        assert upscale_factor in [4], f"upscale_factor must be in [4], but got {upscale_factor}"
+        assert upscale_factor in (2, 3, 4, 8), "Upscale factor should be 2, 3, 4 or 8."
 
         self.conv_1 = nn.Conv2d(in_channels, channels, 3, stride=1, padding=1)
 
@@ -46,10 +47,43 @@ class ResidualFeatureDistillationNet(nn.Module):
 
         self.conv_3 = nn.Conv2d(channels, channels, 3, stride=1, padding=1)
 
-        self.up_sampler = nn.Sequential(
-            nn.Conv2d(channels, out_channels * (upscale_factor ** 2), 3, stride=1, padding=1),
-            nn.PixelShuffle(upscale_factor),
+        # Up-sampling convolutional layer
+        if self.upscale_factor == 2 or self.upscale_factor == 3:
+            self.up_sampling_1 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+        elif self.upscale_factor == 4:
+            self.up_sampling_1 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+            self.up_sampling_2 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+        elif self.upscale_factor == 8:
+            self.up_sampling_1 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+            self.up_sampling_2 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+            self.up_sampling_3 = nn.Sequential(
+                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+                nn.LeakyReLU(0.2, True),
+            )
+
+        # Output layer
+        self.conv_4 = nn.Sequential(
+            nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
+            nn.LeakyReLU(0.2, True),
         )
+
+        # Output layer
+        self.conv_5 = nn.Conv2d(channels, out_channels, (3, 3), (1, 1), (1, 1))
 
         initialize_weights(self.modules())
 
@@ -64,12 +98,37 @@ class ResidualFeatureDistillationNet(nn.Module):
         out = torch.cat([rfdb_1, rfdb_2, rfdb_3, rfdb_4], 1)
         out = self.conv_2(out)
         out = self.conv_3(out)
-
         out = torch.add(out, conv_1)
-        out = self.up_sampler(out)
+
+        if self.upscale_factor == 2:
+            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+        elif self.upscale_factor == 3:
+            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=3, mode="nearest"))
+        elif self.upscale_factor == 4:
+            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+            out = self.up_sampling_2(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+        elif self.upscale_factor == 8:
+            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+            out = self.up_sampling_2(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+            out = self.up_sampling_3(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+
+        out = self.conv_4(out)
+        out = self.conv_5(out)
 
         return torch.clamp_(out, 0, 1)
 
 
+def rfdnet_x2(upscale_factor=2, **kwargs) -> ResidualFeatureDistillationNet:
+    return ResidualFeatureDistillationNet(upscale_factor=upscale_factor, **kwargs)
+
+
+def rfdnet_x3(upscale_factor=3, **kwargs) -> ResidualFeatureDistillationNet:
+    return ResidualFeatureDistillationNet(upscale_factor=upscale_factor, **kwargs)
+
+
 def rfdnet_x4(upscale_factor=4, **kwargs) -> ResidualFeatureDistillationNet:
+    return ResidualFeatureDistillationNet(upscale_factor=upscale_factor, **kwargs)
+
+
+def rfdnet_x8(upscale_factor=8, **kwargs) -> ResidualFeatureDistillationNet:
     return ResidualFeatureDistillationNet(upscale_factor=upscale_factor, **kwargs)
