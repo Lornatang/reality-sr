@@ -1,0 +1,17 @@
+.idea
+.vscode
+
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.pkl
+
+data/DF2K
+data/Set5
+data/custom
+
+demo/data
+demo/output
+
+results
