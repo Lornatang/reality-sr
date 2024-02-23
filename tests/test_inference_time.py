@@ -16,7 +16,7 @@ from torch import Tensor
 from torch import nn
 
 from reality_sr.models.edsrnet import edsrnet_x2, edsrnet_x3, edsrnet_x4, edsrnet_x8
-from reality_sr.models.rfdb import rfdnet_x4
+from reality_sr.models.rfdnet import rfdnet_x4
 from reality_sr.models.rrdbnet import rrdbnet_x2, rrdbnet_x3, rrdbnet_x4, rrdbnet_x8
 
 starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
