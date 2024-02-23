@@ -36,12 +36,6 @@ class EDSRNet(nn.Module):
     ) -> None:
         super(EDSRNet, self).__init__()
         assert upscale_factor in (2, 3, 4, 8), "Upscale factor should be 2, 3, 4 or 8."
-
-        if mean is not None:
-            self.register_buffer("mean", mean.view(1, 3, 1, 1))
-        else:
-            # DIV2K mean
-            self.register_buffer("mean", Tensor([0.4488, 0.4371, 0.4040]).view(1, 3, 1, 1))
         self.upscale_factor = upscale_factor
 
         # First layer
@@ -97,9 +91,7 @@ class EDSRNet(nn.Module):
         initialize_weights(self.modules())
 
     def forward(self, x: Tensor) -> Tensor:
-        out = x.sub_(self.mean).mul_(255.)
-
-        conv_1 = self.conv_1(out)
+        conv_1 = self.conv_1(x)
         out = self.trunk(conv_1)
         out = self.conv_2(out)
         out = torch.add(conv_1, out)
@@ -119,7 +111,6 @@ class EDSRNet(nn.Module):
         out = self.conv_3(out)
         out = self.conv_4(out)
 
-        out = out.div_(255.).add_(self.mean)
         return torch.clamp_(out, 0.0, 1.0)
 
 
