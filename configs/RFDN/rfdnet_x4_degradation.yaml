@@ -74,7 +74,7 @@ TRAIN:
     G:
       OPTIM:
         TYPE: "adam"
-        LR: 0.0002
+        LR: 0.0001
         BETAS: [ 0.9, 0.999 ]
         EPS: 0.000001 # Ensure mixed precision training does not appear Nan
         WEIGHT_DECAY: 0.0
@@ -91,7 +91,7 @@ TRAIN:
       WEIGHT: [ 1.0 ]
 
   # train hyper-parameters
-  EPOCHS: 90  # 90 * 11160 = 1,004,400 ~= 1,000,000 iters
+  EPOCHS: 20  # 90 * 11160 = 1,004,400 ~= 1,000,000 iters
 
   # train setup
   LOCAL_RANK: -1
@@ -104,6 +104,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/rfdnet_x4-df2k_degradation/weights/g_best_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/rfdnet_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True
