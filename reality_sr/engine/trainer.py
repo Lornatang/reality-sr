@@ -27,7 +27,6 @@ from reality_sr.data.degradations import degradation_process
 from reality_sr.data.paired_image_dataset import PairedImageDataset
 from reality_sr.data.transforms import random_crop_torch, random_rotate_torch, random_vertically_flip_torch, random_horizontally_flip_torch
 from reality_sr.layers.ema import ModelEMA
-from reality_sr.models.discriminator_for_unet import discriminator_for_unet
 from reality_sr.models import *
 from reality_sr.models.losses import FeatureLoss
 from reality_sr.utils.checkpoint import load_state_dict, save_checkpoint, strip_optimizer
@@ -109,7 +108,6 @@ class Trainer:
 
         # ========== Init all config ==========
         # datasets
-        self.dataset_mode = self.dataset_config_dict.MODE
         self.dataset_train_gt_images_dir = self.dataset_config_dict.TRAIN_GT_IMAGES_DIR
         self.dataset_train_lr_images_dir = self.dataset_config_dict.get("TRAIN_LR_IMAGES_DIR")
         self.dataset_val_gt_images_dir = self.dataset_config_dict.VAL_GT_IMAGES_DIR
@@ -158,12 +156,11 @@ class Trainer:
         # datasets
         self.train_dataloader, self.val_dataloader = self.get_dataloader()
         self.num_train_batch = len(self.train_dataloader)
-        if self.dataset_mode == "degradation":
-            # Define JPEG compression method and USM sharpening method
-            jpeg_operation = DiffJPEG()
-            usm_sharpener = USMSharp()
-            self.jpeg_operation = jpeg_operation.to(device=self.device)
-            self.usm_sharpener = usm_sharpener.to(device=self.device)
+        # Define JPEG compression method and USM sharpening method
+        jpeg_operation = DiffJPEG()
+        usm_sharpener = USMSharp()
+        self.jpeg_operation = jpeg_operation.to(device=self.device)
+        self.usm_sharpener = usm_sharpener.to(device=self.device)
 
         # For the PSNR phase
         self.g_model = self.get_g_model()
@@ -239,13 +236,7 @@ class Trainer:
                 LOGGER.info(f"D model summary: {d_model_info}")
 
     def get_dataloader(self):
-        if self.dataset_mode not in ["degradation", "paired"]:
-            raise NotImplementedError(f"Dataset mode {self.dataset_mode} is not implemented. Only support `degradation` and `paired`.")
-
-        if self.dataset_mode == "degradation":
-            train_datasets = DegeneratedImageDataset(self.dataset_train_gt_images_dir, self.degradation_model_parameters_dict)
-        else:
-            train_datasets = PairedImageDataset(self.dataset_train_gt_images_dir, self.dataset_train_lr_images_dir)
+        train_datasets = DegeneratedImageDataset(self.dataset_train_gt_images_dir, self.degradation_model_parameters_dict)
         val_datasets = PairedImageDataset(self.dataset_val_gt_images_dir, self.dataset_val_lr_images_dir)
         # generate dataset iterator
         train_dataloader = torch.utils.data.DataLoader(train_datasets,
@@ -403,7 +394,8 @@ class Trainer:
 
     def define_loss(self, loss_type: str) -> Any:
         if loss_type not in ["l1_loss", "l2_loss", "feature_loss", "bce_with_logits_loss"]:
-            raise NotImplementedError(f"Loss type {loss_type} is not implemented. Only support [`l1_loss`, `l2_loss`, `feature_loss`, `bce_with_logits_loss`].")
+            raise NotImplementedError(
+                f"Loss type {loss_type} is not implemented. Only support [`l1_loss`, `l2_loss`, `feature_loss`, `bce_with_logits_loss`].")
 
         if loss_type == "l1_loss":
             criterion = nn.L1Loss()

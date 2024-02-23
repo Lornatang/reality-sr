@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-from .bicubic_image_dataset import *
 from .degenerated_image_dataset import *
 from .degradations import *
 from .paired_image_dataset import *

@@ -44,7 +44,6 @@ DEGRADATION_PROCESS_PARAMETERS_DICT:
   JPEG_RANGE2: [ 30, 95 ]
 
 DATASET:
-  MODE: "degradation" # degradation, paired
   TRAIN_GT_IMAGES_DIR: "data/DF2K/DF2K_sub_image_384x384"  # 178574 images
   TRAIN_LR_IMAGES_DIR: ""
 
