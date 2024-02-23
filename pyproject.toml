@@ -1,0 +1,42 @@
+[build-system]
+requires = ["flit-core >= 3.8"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "reality_sr"
+version = "0.1.0"
+description = "Real world super resolution library."
+readme = "README.md"
+requires-python = ">= 3.10"
+license.file = "LICENSE"
+authors = [
+    { name = "Lornatang", email = "liuchangyu1111@gmail.com" },
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+urls.homepage = "https://github.com/pypa/build"
+urls.changelog = "https://pypa-build.readthedocs.io/en/stable/changelog.html"
+
+dependencies = [
+    "opencv-python",
+    "numpy",
+    "typing",
+    "tqdm",
+    "scipy",
+    "natsort",
+    "fvcore",
+    "omegaconf",
+]
+
+[project.scripts]
+pyproject-build = "build.__main__:entrypoint"
+
+[project.entry-points."pipx.run"]
+build = "build.__main__:entrypoint"
