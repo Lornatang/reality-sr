@@ -15,9 +15,7 @@ import torch
 from torch import Tensor
 from torch import nn
 
-from reality_sr.models.edsrnet import edsrnet_x2, edsrnet_x3, edsrnet_x4, edsrnet_x8
-from reality_sr.models.rfdnet import rfdnet_x4
-from reality_sr.models.rrdbnet import rrdbnet_x2, rrdbnet_x3, rrdbnet_x4, rrdbnet_x8
+from reality_sr.models import *
 
 starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
 
@@ -60,13 +58,22 @@ def build_all_edsr_model(tensor: Tensor, device: torch.device):
 
 
 def build_all_rfdb_model(tensor: Tensor, device: torch.device):
+    x2_model = rfdnet_x2()
+    x3_model = rfdnet_x3()
     x4_model = rfdnet_x4()
+    x8_model = rfdnet_x8()
 
+    x2_model = x2_model.to(device)
+    x3_model = x3_model.to(device)
     x4_model = x4_model.to(device)
+    x8_model = x8_model.to(device)
 
+    _ = x2_model(tensor)
+    _ = x3_model(tensor)
     _ = x4_model(tensor)
+    _ = x8_model(tensor)
 
-    return x4_model
+    return x2_model, x3_model, x4_model, x8_model
 
 
 def build_all_rrdb_model(tensor: Tensor, device: torch.device):
@@ -116,8 +123,9 @@ def benchmark_all_edsr_models(device, tensor):
 
 def benchmark_all_rfdb_models(device, tensor):
     all_rfdb_models = build_all_rfdb_model(tensor, device)
-    inference_time, fps = benchmark_model(tensor, all_rfdb_models)
-    print(f"rfdb_x4: {inference_time:.1f} ms, {fps:.1f} fps")
+    for i, model in zip([2, 3, 4, 8], all_rfdb_models):
+        inference_time, fps = benchmark_model(tensor, model)
+        print(f"rfdnet_x{i}: {inference_time:.1f} ms, {fps:.1f} fps")
 
 
 def benchmark_all_rrdb_models(device, tensor):

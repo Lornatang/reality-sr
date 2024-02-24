@@ -32,6 +32,7 @@ class ResidualFeatureDistillationNet(nn.Module):
     def __init__(self, in_channels: int = 3, out_channels: int = 3, channels: int = 50, upscale_factor: int = 4) -> None:
         super(ResidualFeatureDistillationNet, self).__init__()
         assert upscale_factor in (2, 3, 4, 8), "Upscale factor should be 2, 3, 4 or 8."
+        self.upscale_factor = upscale_factor
 
         self.conv_1 = nn.Conv2d(in_channels, channels, 3, stride=1, padding=1)
 
