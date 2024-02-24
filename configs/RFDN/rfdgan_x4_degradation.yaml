@@ -1,6 +1,6 @@
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "rfdnet_x4-df2k_degradation" # Name of the experiment
-PHASE: "psnr" # psnr, gan
+EXP_NAME: "rfdgan_x4-df2k_degradation" # Name of the experiment
+PHASE: "gan" # psnr, gan
 UPSCALE_FACTOR: 4
 
 DEGRADATION_MODEL_PARAMETERS_DICT:
@@ -56,16 +56,24 @@ MODEL:
     IN_CHANNELS: 3
     OUT_CHANNELS: 3
     CHANNELS: 50
+  D:
+    TYPE: "discriminator_for_unet"
+    IN_CHANNELS: 3
+    OUT_CHANNELS: 1
+    CHANNELS: 64
+    UPSAMPLE_METHOD: "bilinear"
 
 TRAIN:
   RESUME_G: ""
+  RESUME_D: ""
 
   # train weights
-  G_WEIGHTS_PATH: ""
+  G_WEIGHTS_PATH: "results/train/rfdnet_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
+  D_WEIGHTS_PATH: ""
 
   # train datasets
-  IMAGE_SIZE: 256
-  BATCH_SIZE: 64  # 178574 / 64 ~= 2790 iters / epoch
+  IMAGE_SIZE: 192
+  BATCH_SIZE: 16  # 178574 / 16 ~= 11160 iters / epoch
   NUM_WORKERS: 4
 
   # train solver
@@ -74,13 +82,25 @@ TRAIN:
       OPTIM:
         TYPE: "adam"
         LR: 0.0001
-        BETAS: [ 0.9, 0.999 ]
-        EPS: 0.000001 # Ensure mixed precision training does not appear Nan
+        BETAS: [ 0.9, 0.99 ]
+        EPS: 0.0001 # Ensure mixed precision training does not appear Nan
         WEIGHT_DECAY: 0.0
 
       LR_SCHEDULER:
-        TYPE: "step_lr"
-        STEP_SIZE: 180  # epochs / 2
+        TYPE: "multistep_lr"
+        MILESTONES: [ 5, 10, 20, 30 ]  # 0.125, 0.250, 0.5, 0.75
+        GAMMA: 0.5
+    D:
+      OPTIM:
+        TYPE: "adam"
+        LR: 0.0001
+        BETAS: [ 0.9, 0.99 ]
+        EPS: 0.0001 # Ensure mixed precision training does not appear Nan
+        WEIGHT_DECAY: 0.0
+
+      LR_SCHEDULER:
+        TYPE: "multistep_lr"
+        MILESTONES: [ 5, 10, 20, 30 ]  # 0.125, 0.250, 0.5, 0.75
         GAMMA: 0.5
 
   # loss config
@@ -88,9 +108,15 @@ TRAIN:
     PIXEL:
       TYPE: "l1_loss"
       WEIGHT: [ 1.0 ]
+    FEATURE:
+      TYPE: "feature_loss"
+      WEIGHT: [ 0.1, 0.1, 1.0, 1.0, 1.0 ]
+    ADV:
+      TYPE: "bce_with_logits_loss"
+      WEIGHT: [ 0.1 ]
 
   # train hyper-parameters
-  EPOCHS: 359  # 359 * 2790 = 1,001,610 ~= 1,000,000 iters
+  EPOCHS: 36  # 36 * 11160 = 401,760 ~= 400,000 iters
 
   # train setup
   LOCAL_RANK: -1
@@ -103,6 +129,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/rfdnet_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/rfdgan_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True
