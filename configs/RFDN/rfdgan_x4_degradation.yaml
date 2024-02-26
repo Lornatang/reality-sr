@@ -73,7 +73,7 @@ TRAIN:
 
   # train datasets
   IMAGE_SIZE: 192
-  BATCH_SIZE: 16  # 178574 / 16 ~= 11160 iters / epoch
+  BATCH_SIZE: 64  # 178,574 / 64 ~= 2,790 iters / epoch
   NUM_WORKERS: 4
 
   # train solver
@@ -82,26 +82,22 @@ TRAIN:
       OPTIM:
         TYPE: "adam"
         LR: 0.0001
-        BETAS: [ 0.9, 0.99 ]
-        EPS: 0.0001 # Ensure mixed precision training does not appear Nan
-        WEIGHT_DECAY: 0.0
+        BETAS: [ 0.9, 0.999 ]
 
       LR_SCHEDULER:
-        TYPE: "multistep_lr"
-        MILESTONES: [ 5, 10, 20, 30 ]  # 0.125, 0.250, 0.5, 0.75
-        GAMMA: 0.5
+        TYPE: "constant"
+        FACTOR: 1.0
+        TOTAL_ITERS: 143
     D:
       OPTIM:
         TYPE: "adam"
         LR: 0.0001
-        BETAS: [ 0.9, 0.99 ]
-        EPS: 0.0001 # Ensure mixed precision training does not appear Nan
-        WEIGHT_DECAY: 0.0
+        BETAS: [ 0.9, 0.999 ]
 
       LR_SCHEDULER:
-        TYPE: "multistep_lr"
-        MILESTONES: [ 5, 10, 20, 30 ]  # 0.125, 0.250, 0.5, 0.75
-        GAMMA: 0.5
+        TYPE: "constant"
+        FACTOR: 1.0
+        TOTAL_ITERS: 143
 
   # loss config
   LOSS:
@@ -116,7 +112,7 @@ TRAIN:
       WEIGHT: [ 0.1 ]
 
   # train hyper-parameters
-  EPOCHS: 36  # 36 * 11160 = 401,760 ~= 400,000 iters
+  EPOCHS: 143  # 143 * 2,790 = 401,760 ~= 400,000 iters
 
   # train setup
   LOCAL_RANK: -1

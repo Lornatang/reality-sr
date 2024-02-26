@@ -98,11 +98,9 @@ class DiscriminatorForUNet(nn.Module):
 
         up_3 = torch.add(up_3, conv_1)
 
-        out = self.conv_2(up_3)
-        out = self.conv_3(out)
-        out = self.conv_4(out)
-
-        return out
+        x = self.conv_2(up_3)
+        x = self.conv_3(x)
+        return self.conv_4(x)
 
 
 def discriminator_for_unet(**kwargs) -> DiscriminatorForUNet:

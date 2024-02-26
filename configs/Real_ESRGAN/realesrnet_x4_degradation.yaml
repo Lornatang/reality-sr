@@ -6,7 +6,7 @@ UPSCALE_FACTOR: 4
 DEGRADATION_MODEL_PARAMETERS_DICT:
   SINC_KERNEL_SIZE: 21
   GAUSSIAN_KERNEL_RANGE: [ 7, 9, 11, 13, 15, 17, 19, 21 ]
-  GAUSSIAN_KERNEL_TYPE: [ "ISOTROPIC", "ANISOTROPIC","GENERALIZED_ISOTROPIC", "GENERALIZED_ANISOTROPIC","PLATEAU_ISOTROPIC", "PLATEAU_ANISOTROPIC" ]
+  GAUSSIAN_KERNEL_TYPE: [ "isotropic", "anisotropic","generalized_isotropic", "generalized_anisotropic","plateau_isotropic", "plateau_anisotropic" ]
   # first-order degradation parameters
   GAUSSIAN_KERNEL_PROBABILITY1: [ 0.45, 0.25, 0.12, 0.03, 0.12, 0.03 ]
   SINC_KERNEL_PROBABILITY1: 0.1
@@ -77,13 +77,11 @@ TRAIN:
         TYPE: "adam"
         LR: 0.0002
         BETAS: [ 0.9, 0.99 ]
-        EPS: 0.0001 # Ensure mixed precision training does not appear Nan
-        WEIGHT_DECAY: 0.0
 
       LR_SCHEDULER:
-        TYPE: "step_lr"
-        STEP_SIZE: 18  # epochs / 5
-        GAMMA: 0.5
+        TYPE: "constant"
+        FACTOR: 1.0
+        TOTAL_ITERS: 90
 
   # loss config
   LOSS:

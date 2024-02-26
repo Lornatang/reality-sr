@@ -77,12 +77,8 @@ class ResidualConvBlock(nn.Module):
         )
 
     def forward(self, x: Tensor) -> Tensor:
-        identity = x
-
         out = self.rcb(x)
-
-        out = torch.mul(out, 0.1)
-        return torch.add(out, identity)
+        return torch.add(out, x)
 
 
 class ResidualDenseBlock(nn.Module):
@@ -105,9 +101,6 @@ class ResidualDenseBlock(nn.Module):
         self.leaky_relu = nn.LeakyReLU(0.2, True)
         self.identity = nn.Identity()
 
-        # Initialize model weights.
-        self._initialize_weights()
-
     def forward(self, x: Tensor) -> Tensor:
         identity = x
 
@@ -118,14 +111,6 @@ class ResidualDenseBlock(nn.Module):
         out_5 = self.identity(self.conv_5(torch.cat([x, out_1, out_2, out_3, out_4], 1)))
         out = torch.mul(out_5, 0.2)
         return torch.add(out, identity)
-
-    def _initialize_weights(self) -> None:
-        for module in self.modules():
-            if isinstance(module, nn.Conv2d):
-                nn.init.kaiming_normal_(module.weight)
-                module.weight.data *= 0.1
-                if module.bias is not None:
-                    nn.init.constant_(module.bias, 0)
 
 
 class ResidualResidualDenseBlock(nn.Module):
@@ -167,7 +152,7 @@ class ResidualFeatureDistillationBlock(nn.Module):
         self.conv_2_distilled = nn.Conv2d(self.remaining_channels, self.distilled_channels, 1, stride=1, padding=0)
         self.conv_2_remaining = nn.Conv2d(self.remaining_channels, self.remaining_channels, 3, stride=1, padding=1)
         self.conv_3_distilled = nn.Conv2d(self.remaining_channels, self.distilled_channels, 1, stride=1, padding=0)
-        self.conv_3_remaining = nn.Conv2d(self.remaining_channels, self.remaining_channels, 3, padding=1)
+        self.conv_3_remaining = nn.Conv2d(self.remaining_channels, self.remaining_channels, 3, stride=1, padding=1)
         self.conv_4 = nn.Conv2d(self.remaining_channels, self.distilled_channels, 3, stride=1, padding=1)
         self.conv_5 = nn.Conv2d(self.distilled_channels * 4, channels, 1, stride=1, padding=0)
 

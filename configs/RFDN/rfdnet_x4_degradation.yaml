@@ -44,7 +44,7 @@ DEGRADATION_PROCESS_PARAMETERS_DICT:
   JPEG_RANGE2: [ 30, 95 ]
 
 DATASET:
-  TRAIN_GT_IMAGES_DIR: "data/DF2K/DF2K_sub_image_384x384"  # 178574 images
+  TRAIN_GT_IMAGES_DIR: "data/DF2K/DF2K_sub_image_384x384"  # 178,574 images
   TRAIN_LR_IMAGES_DIR: ""
 
   VAL_GT_IMAGES_DIR: "data/Set5/X4/GT"
@@ -65,7 +65,7 @@ TRAIN:
 
   # train datasets
   IMAGE_SIZE: 256
-  BATCH_SIZE: 64  # 178574 / 64 ~= 2790 iters / epoch
+  BATCH_SIZE: 64  # 178,574 / 64 ~= 2,790 iters / epoch
   NUM_WORKERS: 4
 
   # train solver
@@ -73,14 +73,12 @@ TRAIN:
     G:
       OPTIM:
         TYPE: "adam"
-        LR: 0.0001
+        LR: 0.0005
         BETAS: [ 0.9, 0.999 ]
-        EPS: 0.000001 # Ensure mixed precision training does not appear Nan
-        WEIGHT_DECAY: 0.0
 
       LR_SCHEDULER:
         TYPE: "step_lr"
-        STEP_SIZE: 180  # epochs / 2
+        STEP_SIZE: 72  # epochs / 5
         GAMMA: 0.5
 
   # loss config

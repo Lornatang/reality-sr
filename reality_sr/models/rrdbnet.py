@@ -65,7 +65,7 @@ class RRDBNet(nn.Module):
                 nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
                 nn.LeakyReLU(0.2, True),
             )
-        elif self.upscale_factor == 8:
+        else:  # 8
             self.up_sampling_1 = nn.Sequential(
                 nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
                 nn.LeakyReLU(0.2, True),
@@ -92,28 +92,28 @@ class RRDBNet(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         conv_1 = self.conv_1(x)
-        out = self.trunk(conv_1)
-        out = self.conv_2(out)
-        out = torch.add(conv_1, out)
+        x = self.trunk(conv_1)
+        x = self.conv_2(x)
+        x = torch.add(conv_1, x)
 
         if self.upscale_factor == 2:
-            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+            x = self.up_sampling_1(F_torch.interpolate(x, scale_factor=2, mode="nearest"))
         elif self.upscale_factor == 3:
-            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=3, mode="nearest"))
+            x = self.up_sampling_1(F_torch.interpolate(x, scale_factor=3, mode="nearest"))
         elif self.upscale_factor == 4:
-            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-            out = self.up_sampling_2(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-        elif self.upscale_factor == 8:
-            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-            out = self.up_sampling_2(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-            out = self.up_sampling_3(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
+            x = self.up_sampling_1(F_torch.interpolate(x, scale_factor=2, mode="nearest"))
+            x = self.up_sampling_2(F_torch.interpolate(x, scale_factor=2, mode="nearest"))
+        else:  # 8
+            x = self.up_sampling_1(F_torch.interpolate(x, scale_factor=2, mode="nearest"))
+            x = self.up_sampling_2(F_torch.interpolate(x, scale_factor=2, mode="nearest"))
+            x = self.up_sampling_3(F_torch.interpolate(x, scale_factor=2, mode="nearest"))
 
-        out = self.conv_3(out)
-        out = self.conv_4(out)
+        x = self.conv_3(x)
+        x = self.conv_4(x)
 
-        out = torch.clamp_(out, 0.0, 1.0)
+        x = torch.clamp_(x, 0.0, 1.0)
 
-        return out
+        return x
 
 
 def rrdbnet_x2(upscale_factor=2, **kwargs) -> RRDBNet:

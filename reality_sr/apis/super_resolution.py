@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-import os.path
 from abc import ABC
 from pathlib import Path
 
@@ -49,6 +48,9 @@ class SuperResolutionInferencer(ABC):
             self.model.float()
             self.half = False
 
+        # disable gradients
+        torch.set_grad_enabled(False)
+
         # get all images
         self.file_names = get_all_filenames(self.inputs)
         if len(self.file_names) == 0:
@@ -62,32 +64,36 @@ class SuperResolutionInferencer(ABC):
         tensor = torch.randn([1, 3, 64, 64]).to(self.device)
         _ = self.model(tensor)
 
-    def _pre_process(self, file_name: str) -> Tensor:
-        image_path = Path(self.inputs) / file_name
-        image_path = str(image_path)
-
-        # read an image using OpenCV
-        image = cv2.imread(image_path).astype(np.float32) / 255.0
-
-        # BGR image channel data to RGB image channel data
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
+    def pre_process(self, image: np.ndarray) -> Tensor:
         # Convert RGB image channel data to image formats supported by PyTorch
         tensor = image_to_tensor(image, False, False).unsqueeze_(0)
 
         # Data transfer to the specified device
         return tensor.to(device=self.device, non_blocking=True)
 
-    def inference(self) -> None:
-        for image_path in self.file_names:
-            lr_tensor = self._pre_process(image_path)
-            # Use the model to generate super-resolved images
-            with torch.no_grad():
-                sr_tensor = self.model(lr_tensor)
+    def post_process(self, tensor: Tensor) -> np.ndarray:
+        # Convert the tensor to an image format supported by OpenCV
+        image = tensor_to_image(tensor, False, False)
 
-            # Save image
-            sr_image = tensor_to_image(sr_tensor, False, False)
-            sr_image = cv2.cvtColor(sr_image, cv2.COLOR_RGB2BGR)
-            output_path = self.output / Path(image_path).name
+        # Convert the image from RGB to BGR format
+        return cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+    def infer(self, image: np.ndarray) -> np.ndarray:
+        lr_tensor = self.pre_process(image)
+        sr_tensor = self.model(lr_tensor)
+        return self.post_process(sr_tensor)
+
+    def inference(self) -> None:
+        for file_name in self.file_names:
+            file_name = Path(self.inputs) / file_name
+            file_name = str(file_name)
+            image = cv2.imread(file_name, cv2.IMREAD_UNCHANGED).astype(np.float32) / 255.0
+            if len(image.shape) == 2:
+                image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+            else:
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+            sr_image = self.infer(image)
+            output_path = self.output / Path(file_name).name
             cv2.imwrite(str(output_path), sr_image)
-            print(f"SR image save to `{output_path}`")
+            LOGGER.info(f"SR image save to `{output_path}`")

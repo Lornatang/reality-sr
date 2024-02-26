@@ -157,7 +157,7 @@ class Trainer:
         self.train_dataloader, self.val_dataloader = self.get_dataloader()
         self.num_train_batch = len(self.train_dataloader)
         # Define JPEG compression method and USM sharpening method
-        jpeg_operation = DiffJPEG()
+        jpeg_operation = DiffJPEG(False)
         usm_sharpener = USMSharp()
         self.jpeg_operation = jpeg_operation.to(device=self.device)
         self.usm_sharpener = usm_sharpener.to(device=self.device)
@@ -263,20 +263,6 @@ class Trainer:
                                  channels=self.model_config_dict.G.get("CHANNELS", 64),
                                  growth_channels=self.model_config_dict.G.get("GROWTH_CHANNELS", 32),
                                  num_rrdb=self.model_config_dict.G.get("NUM_RRDB", 23))
-        elif model_g_type == "edsrnet_x2":
-            g_model = edsrnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
-                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                 channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
-        elif model_g_type == "edsrnet_x4":
-            g_model = edsrnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
-                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                 channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
-        elif model_g_type == "rfdnet_x4":
-            g_model = rfdnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
-                                out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                channels=self.model_config_dict.G.get("CHANNELS", 50))
         else:
             raise NotImplementedError(f"Model type `{model_g_type}` is not implemented.")
         g_model = g_model.to(self.device)
@@ -306,9 +292,7 @@ class Trainer:
 
         g_optimizer = optim.Adam(self.g_model.parameters(),
                                  lr=self.train_config_dict.SOLVER.G.OPTIM.LR,
-                                 betas=OmegaConf.to_container(self.train_config_dict.SOLVER.G.OPTIM.BETAS),
-                                 eps=self.train_config_dict.SOLVER.G.OPTIM.EPS,
-                                 weight_decay=self.train_config_dict.SOLVER.G.OPTIM.WEIGHT_DECAY)
+                                 betas=OmegaConf.to_container(self.train_config_dict.SOLVER.G.OPTIM.BETAS))
 
         LOGGER.info(f"G optimizer: {g_optimizer}")
         return g_optimizer
@@ -320,9 +304,7 @@ class Trainer:
 
         d_optimizer = optim.Adam(self.d_model.parameters(),
                                  lr=self.train_config_dict.SOLVER.D.OPTIM.LR,
-                                 betas=OmegaConf.to_container(self.train_config_dict.SOLVER.D.OPTIM.BETAS),
-                                 eps=self.train_config_dict.SOLVER.D.OPTIM.EPS,
-                                 weight_decay=self.train_config_dict.SOLVER.D.OPTIM.WEIGHT_DECAY)
+                                 betas=OmegaConf.to_container(self.train_config_dict.SOLVER.D.OPTIM.BETAS))
         LOGGER.info(f"D optimizer: {d_optimizer}")
         return d_optimizer
 
@@ -499,7 +481,7 @@ class Trainer:
             # Record training log information
             if i % 100 == 0 or i == self.num_train_batch - 1:
                 # Writer Loss to file
-                self.tblogger.add_scalar("Train/Loss", loss.item(), i + self.current_epoch * self.train_batch_size + 1)
+                self.tblogger.add_scalar("Train/Pixel_Loss", loss.item(), i + self.current_epoch * self.train_batch_size + 1)
                 self.progress.display(i + 1)
 
     def train_gan(self):

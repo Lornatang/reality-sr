@@ -11,11 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import math
+
 import torch
 from torch import Tensor, nn
-from torch.nn import functional as F_torch
 
 from reality_sr.layers.blocks import ResidualConvBlock
+from reality_sr.layers.upsample import PixShuffleUpsampleBlock
 from reality_sr.utils.ops import initialize_weights
 
 __all__ = [
@@ -32,11 +34,18 @@ class EDSRNet(nn.Module):
             channels: int = 64,
             num_rcb: int = 16,
             upscale_factor: int = 4,
+            image_range: float = 255.,
             mean: Tensor = None,
     ) -> None:
         super(EDSRNet, self).__init__()
         assert upscale_factor in (2, 3, 4, 8), "Upscale factor should be 2, 3, 4 or 8."
+
         self.upscale_factor = upscale_factor
+        if mean is not None:
+            self.mean = torch.tensor(mean).view(1, 3, 1, 1)
+        else:
+            self.mean = torch.tensor([0.4488, 0.4371, 0.4040]).view(1, 3, 1, 1)
+        self.image_range = image_range
 
         # First layer
         self.conv_1 = nn.Conv2d(in_channels, channels, 3, stride=1, padding=1)
@@ -50,68 +59,34 @@ class EDSRNet(nn.Module):
         # Second layer
         self.conv_2 = nn.Conv2d(channels, channels, 3, stride=1, padding=1)
 
-        # Up-sampling convolutional layer
-        if self.upscale_factor == 2 or self.upscale_factor == 3:
-            self.up_sampling_1 = nn.Sequential(
-                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
-                nn.LeakyReLU(0.2, True),
-            )
-        elif self.upscale_factor == 4:
-            self.up_sampling_1 = nn.Sequential(
-                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
-                nn.LeakyReLU(0.2, True),
-            )
-            self.up_sampling_2 = nn.Sequential(
-                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
-                nn.LeakyReLU(0.2, True),
-            )
-        elif self.upscale_factor == 8:
-            self.up_sampling_1 = nn.Sequential(
-                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
-                nn.LeakyReLU(0.2, True),
-            )
-            self.up_sampling_2 = nn.Sequential(
-                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
-                nn.LeakyReLU(0.2, True),
-            )
-            self.up_sampling_3 = nn.Sequential(
-                nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
-                nn.LeakyReLU(0.2, True),
-            )
+        # Up-sampling layers
+        up_sampling = []
+        if (upscale_factor & (upscale_factor - 1)) == 0:  # 2,4,8
+            for _ in range(int(math.log(upscale_factor, 2))):
+                up_sampling.append(PixShuffleUpsampleBlock(64, 2))
+        else:  # 3
+            up_sampling.append(PixShuffleUpsampleBlock(64, 3))
+        self.up_sampling = nn.Sequential(*up_sampling)
 
-        # Output layer
-        self.conv_3 = nn.Sequential(
-            nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1)),
-            nn.LeakyReLU(0.2, True),
-        )
-
-        # Output layer
-        self.conv_4 = nn.Conv2d(channels, out_channels, (3, 3), (1, 1), (1, 1))
+        # Final output layer
+        self.conv_3 = nn.Conv2d(channels, out_channels, (3, 3), (1, 1), (1, 1))
 
         initialize_weights(self.modules())
 
     def forward(self, x: Tensor) -> Tensor:
+        self.mean = self.mean.type_as(x)
+        self.mean = self.mean.to(x.device)
+
+        x = x.sub_(self.mean).mul_(self.image_range)
+
         conv_1 = self.conv_1(x)
-        out = self.trunk(conv_1)
-        out = self.conv_2(out)
-        out = torch.add(conv_1, out)
-
-        if self.upscale_factor == 2:
-            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-        elif self.upscale_factor == 3:
-            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=3, mode="nearest"))
-        elif self.upscale_factor == 4:
-            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-            out = self.up_sampling_2(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-        elif self.upscale_factor == 8:
-            out = self.up_sampling_1(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-            out = self.up_sampling_2(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-            out = self.up_sampling_3(F_torch.interpolate(out, scale_factor=2, mode="nearest"))
-
-        out = self.conv_3(out)
-        out = self.conv_4(out)
-
-        return torch.clamp_(out, 0.0, 1.0)
+        x = self.trunk(conv_1)
+        x = self.conv_2(x)
+        x = torch.add(x, conv_1)
+        x = self.up_sampling(x)
+        x = self.conv_3(x)
+        x = x.div_(self.image_range).add_(self.mean)
+        return torch.clamp_(x, 0.0, 1.0)
 
 
 def edsrnet_x2(upscale_factor=2, **kwargs) -> EDSRNet:

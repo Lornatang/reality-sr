@@ -16,8 +16,33 @@ from typing import Any
 from torch import nn
 
 __all__ = [
-    "initialize_weights",
+    "get_window_position", "initialize_weights",
 ]
+
+
+def get_window_position(pos_x: int, pos_y: int, image_width: int, image_height: int, window_width: int, window_height: int):
+    r"""Get the position of the window.
+
+    Args:
+        pos_x (int): The x-coordinate of the window.
+        pos_y (int): The y-coordinate of the window.
+        image_width (int): The width of the image.
+        image_height (int): The height of the image.
+        window_width (int): The width of the window.
+        window_height (int): The height of the window.
+    """
+    is_right_edge = (image_width - pos_x) < window_width
+    is_bottom_edge = (image_height - pos_y) < window_height
+    is_right_bottom_edge = is_right_edge and is_bottom_edge
+
+    if is_right_bottom_edge:
+        return image_width - window_width, image_height - window_height, image_width, image_height
+    if is_bottom_edge:
+        return pos_x, image_height - window_height, pos_x + window_width, image_height
+    if is_right_edge:
+        return image_width - window_width, pos_y, image_width, pos_y + window_height
+
+    return pos_x, pos_y, pos_x + window_width, pos_y + window_height
 
 
 def initialize_weights(modules: Any):
