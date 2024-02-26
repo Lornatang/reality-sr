@@ -263,6 +263,11 @@ class Trainer:
                                  channels=self.model_config_dict.G.get("CHANNELS", 64),
                                  growth_channels=self.model_config_dict.G.get("GROWTH_CHANNELS", 32),
                                  num_rrdb=self.model_config_dict.G.get("NUM_RRDB", 23))
+        if model_g_type == "edsrnet_x4":
+            g_model = edsrnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                 channels=self.model_config_dict.G.get("CHANNELS", 64),
+                                 num_blocks=self.model_config_dict.G.get("NUM_RCB", 16))
         else:
             raise NotImplementedError(f"Model type `{model_g_type}` is not implemented.")
         g_model = g_model.to(self.device)
