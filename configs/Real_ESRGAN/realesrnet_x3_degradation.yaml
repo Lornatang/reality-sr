@@ -1,7 +1,7 @@
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "realesrnet_x4-df2k_degradation" # Name of the experiment
+EXP_NAME: "realesrnet_x3-df2k_degradation" # Name of the experiment
 PHASE: "psnr" # psnr, gan
-UPSCALE_FACTOR: 4
+UPSCALE_FACTOR: 3
 
 DEGRADATION_MODEL_PARAMETERS_DICT:
   SINC_KERNEL_SIZE: 21
@@ -47,12 +47,12 @@ DATASET:
   TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_sub_image_384x384"  # 178574 images
   TRAIN_LR_IMAGES_DIR: ""
 
-  VAL_GT_IMAGES_DIR: "datasets/Set5/X4/GT"
-  VAL_LR_IMAGES_DIR: "datasets/Set5/X4/LR"
+  VAL_GT_IMAGES_DIR: "datasets/Set5/X3/GT"
+  VAL_LR_IMAGES_DIR: "datasets/Set5/X3/LR"
 
 MODEL:
   G:
-    TYPE: "rrdbnet_x4"
+    TYPE: "rrdbnet_x3"
     IN_CHANNELS: 3
     OUT_CHANNELS: 3
     CHANNELS: 64
@@ -66,7 +66,7 @@ TRAIN:
   G_WEIGHTS_PATH: ""
 
   # train datasets
-  IMAGE_SIZE: 256
+  IMAGE_SIZE: 192
   BATCH_SIZE: 16  # 178574 / 16 ~= 11160 iters / epoch
   NUM_WORKERS: 4
 
@@ -103,6 +103,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/realesrnet_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/realesrnet_x3-df2k_degradation/weights/g_last_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True
