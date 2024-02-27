@@ -7,9 +7,9 @@
 *.bmp
 *.pkl
 
-data/DF2K
-data/Set5
-data/custom
+datasets/DF2K
+datasets/Set5
+datasets/custom
 
 demo/data
 demo/output

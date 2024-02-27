@@ -26,13 +26,13 @@ bash get_test_datasets.sh
 The main purpose is to reduce the IO consumption of hard drives and speed up training.
 
 ```shell
-python tools/misc/slice_sub_image.py -i data/DF2K/DF2K -o data/DF2K/DF2K_sub_image_384x384 --crop-size 384 --step 192 --thresh-size 384
+python tools/misc/slice_sub_image.py -i datasets/DF2K/DF2K -o datasets/DF2K/DF2K_sub_image_384x384 --crop-size 384 --step 192 --thresh-size 384
 ```
 
 If the machine has enough performance, you can increase the number of threads to speed up processing.
 
 ```shell
-python tools/misc/slice_sub_image.py -i data/DF2K/DF2K -o data/DF2K/DF2K_sub_image_384x384 --crop-size 384 --step 192 --thresh-size 384 --num-workers 32
+python tools/misc/slice_sub_image.py -i datasets/DF2K/DF2K -o datasets/DF2K/DF2K_sub_image_384x384 --crop-size 384 --step 192 --thresh-size 384 --num-workers 32
 ```
 
 **Step 4: Download the pretrained model weights to `./results/pretrained_models`.**
@@ -85,7 +85,7 @@ python tools/train.py configs/Real_ESRGAN/realesrgan_x4_degradation.yaml
 The data structure is as follows:
 
 ```shell
-|---data
+|---datasets
     |---custom
         |---gt
             |---0001.png
@@ -102,13 +102,13 @@ The data structure is as follows:
 The main purpose is to reduce the IO consumption of hard drives and speed up training.
 
 ```shell
-python tools/misc/slice_sub_image.py -i data/custom/gt -o data/custom/gt_sub_image_384x384 --crop-size 384 --step 192 --thresh-size 384
+python tools/misc/slice_sub_image.py -i datasets/custom/gt -o datasets/custom/gt_sub_image_384x384 --crop-size 384 --step 192 --thresh-size 384
 ```
 
 If the machine has enough performance, you can increase the number of threads to speed up processing.
 
 ```shell
-python tools/misc/slice_sub_image.py -i data/custom/gt -o data/custom/gt_sub_image_384x384 --crop-size 384 --step 192 --thresh-size 384 --num-workers 32
+python tools/misc/slice_sub_image.py -i datasets/custom/gt -o datasets/custom/gt_sub_image_384x384 --crop-size 384 --step 192 --thresh-size 384 --num-workers 32
 ```
 
 **Step 3: Download the test dataset and extract it to `./data`.**
