@@ -5,6 +5,5 @@ WINDOW_HEIGHT: 256
 OVERLAP_WIDTH: 32
 OVERLAP_HEIGHT: 32
 WEIGHTS_PATH: "results/pretrained_models/realesrgan_x4-df2k_degradation.pkl"
-HALF: True
 INPUTS: "demo/data"
 OUTPUT: "demo/output"

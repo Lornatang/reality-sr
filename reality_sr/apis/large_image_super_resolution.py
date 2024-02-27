@@ -18,6 +18,7 @@ import numpy as np
 from omegaconf import DictConfig
 
 from reality_sr.utils.events import LOGGER
+from reality_sr.utils.general import get_all_filenames
 from reality_sr.utils.ops import get_window_position
 from .super_resolution import SuperResolutionInferencer
 
@@ -66,18 +67,24 @@ class LargeImageSuperResolutionInferencer(SuperResolutionInferencer):
         return splicing_image
 
     def inference(self) -> None:
-        for file_name in self.file_names:
-            file_name = Path(self.inputs) / file_name
-            file_name = str(file_name)
-            image = cv2.imread(file_name, cv2.IMREAD_UNCHANGED).astype(np.float32) / 255.0
-            if len(image.shape) == 2:
-                image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-            else:
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # get all images
+        lr_image_names = get_all_filenames(self.inputs)
+        if len(lr_image_names) == 0:
+            raise ValueError(f"No images found in `{self.inputs}`.")
 
-            sr_image = self.infer(image)
+        for lr_image_name in lr_image_names:
+            lr_image_path = Path(self.inputs) / lr_image_name
+            lr_image = cv2.imread(str(lr_image_path), cv2.IMREAD_UNCHANGED).astype(np.float32) / 255.0
+            if len(lr_image.shape) == 2:
+                lr_image = cv2.cvtColor(lr_image, cv2.COLOR_GRAY2RGB)
+            else:
+                lr_image = cv2.cvtColor(lr_image, cv2.COLOR_BGR2RGB)
+
+            lr_tensor = self.pre_process(lr_image)
+            sr_tensor = self.model(lr_tensor)
+            sr_image = self.post_process(sr_tensor)
 
             # Save image
-            output_path = self.output / Path(file_name).name
-            cv2.imwrite(str(output_path), sr_image)
-            LOGGER.info(f"SR image save to `{output_path}`")
+            sr_image_path = self.output / Path(lr_image_name).name
+            cv2.imwrite(str(sr_image_path), sr_image)
+            LOGGER.info(f"SR image save to `{sr_image_path}`")

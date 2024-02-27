@@ -4,7 +4,10 @@
 *.jpg
 *.jpeg
 *.png
+*.avi
+*.mp4
 *.bmp
+
 *.pkl
 
 data/DF2K

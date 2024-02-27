@@ -27,13 +27,16 @@ from reality_sr.utils.general import get_all_filenames
 from reality_sr.utils.imgproc import image_to_tensor, tensor_to_image
 from reality_sr.utils.torch_utils import get_model_info
 
+__all__ = [
+    "SuperResolutionInferencer",
+]
+
 
 class SuperResolutionInferencer(ABC):
     def __init__(self, config_dict: DictConfig) -> None:
         # load inference config
         self.device = select_device(config_dict.DEVICE)
         self.weights_path = config_dict.WEIGHTS_PATH
-        self.half = config_dict.HALF
         self.inputs = config_dict.INPUTS
         self.output = config_dict.OUTPUT
 
@@ -42,58 +45,50 @@ class SuperResolutionInferencer(ABC):
         model_info = get_model_info(self.model.model, device=self.device)
         LOGGER.info(f"Model summary: {model_info}")
 
-        if self.half and self.device.type != "cpu":
-            self.model.half()
-        else:
-            self.model.float()
-            self.half = False
-
         # disable gradients
         torch.set_grad_enabled(False)
-
-        # get all images
-        self.file_names = get_all_filenames(self.inputs)
-        if len(self.file_names) == 0:
-            raise ValueError(f"No images found in `{self.inputs}`.")
 
         # Create a result folder
         self.output = Path(self.output).resolve()
         self.output.mkdir(parents=True, exist_ok=True)
 
     def warmup(self):
-        tensor = torch.randn([1, 3, 64, 64]).to(self.device)
+        tensor = torch.randn([1, 3, 64, 64], device=self.device)
         _ = self.model(tensor)
 
     def pre_process(self, image: np.ndarray) -> Tensor:
+        if len(image.shape) == 2:
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        else:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
         # Convert RGB image channel data to image formats supported by PyTorch
         tensor = image_to_tensor(image, False, False).unsqueeze_(0)
 
         # Data transfer to the specified device
         return tensor.to(device=self.device, non_blocking=True)
 
-    def post_process(self, tensor: Tensor) -> np.ndarray:
+    @staticmethod
+    def post_process(tensor: Tensor) -> np.ndarray:
         # Convert the tensor to an image format supported by OpenCV
         image = tensor_to_image(tensor, False, False)
 
         # Convert the image from RGB to BGR format
         return cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-    def infer(self, image: np.ndarray) -> np.ndarray:
-        lr_tensor = self.pre_process(image)
-        sr_tensor = self.model(lr_tensor)
-        return self.post_process(sr_tensor)
-
     def inference(self) -> None:
-        for file_name in self.file_names:
-            file_name = Path(self.inputs) / file_name
-            file_name = str(file_name)
-            image = cv2.imread(file_name, cv2.IMREAD_UNCHANGED).astype(np.float32) / 255.0
-            if len(image.shape) == 2:
-                image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-            else:
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # get all images
+        lr_image_names = get_all_filenames(self.inputs)
+        if len(lr_image_names) == 0:
+            raise ValueError(f"No images found in `{self.inputs}`.")
 
-            sr_image = self.infer(image)
-            output_path = self.output / Path(file_name).name
-            cv2.imwrite(str(output_path), sr_image)
-            LOGGER.info(f"SR image save to `{output_path}`")
+        for lr_image_name in lr_image_names:
+            lr_image_path = Path(self.inputs) / lr_image_name
+            lr_image = cv2.imread(str(lr_image_path), cv2.IMREAD_UNCHANGED).astype(np.float32) / 255.0
+
+            lr_tensor = self.pre_process(lr_image)
+            sr_tensor = self.model(lr_tensor)
+            sr_image = self.post_process(sr_tensor)
+            sr_image_path = self.output / lr_image_path.name
+            cv2.imwrite(str(sr_image_path), sr_image)
+            LOGGER.info(f"SR image save to `{sr_image_path}`")

@@ -1,0 +1,5 @@
+DEVICE: "0"
+WEIGHTS_PATH: "results/pretrained_models/realesrgan_x4-df2k_degradation.pkl"
+UPSCALE_FACTOR: 4
+INPUTS: "demo/demo_001.mp4"
+OUTPUT: "demo/output"
