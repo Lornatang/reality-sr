@@ -1,0 +1,108 @@
+DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
+EXP_NAME: "realesrnet_x2-df2k_degradation" # Name of the experiment
+PHASE: "psnr" # psnr, gan
+UPSCALE_FACTOR: 2
+
+DEGRADATION_MODEL_PARAMETERS_DICT:
+  SINC_KERNEL_SIZE: 21
+  GAUSSIAN_KERNEL_RANGE: [ 7, 9, 11, 13, 15, 17, 19, 21 ]
+  GAUSSIAN_KERNEL_TYPE: [ "isotropic", "anisotropic","generalized_isotropic", "generalized_anisotropic","plateau_isotropic", "plateau_anisotropic" ]
+  # first-order degradation parameters
+  GAUSSIAN_KERNEL_PROBABILITY1: [ 0.45, 0.25, 0.12, 0.03, 0.12, 0.03 ]
+  SINC_KERNEL_PROBABILITY1: 0.1
+  GAUSSIAN_SIGMA_RANGE1: [ 0.2, 3 ]
+  GENERALIZED_KERNEL_BETA_RANGE1: [ 0.5, 4 ]
+  PLATEAU_KERNEL_BETA_RANGE1: [ 1, 2 ]
+  # second-order degradation parameters
+  GAUSSIAN_KERNEL_PROBABILITY2: [ 0.45, 0.25, 0.12, 0.03, 0.12, 0.03 ]
+  SINC_KERNEL_PROBABILITY2: 0.1
+  GAUSSIAN_SIGMA_RANGE2: [ 0.2, 1.5 ]
+  GENERALIZED_KERNEL_BETA_RANGE2: [ 0.5, 4 ]
+  PLATEAU_KERNEL_BETA_RANGE2: [ 1, 2 ]
+  SINC_KERNEL_PROBABILITY3: 0.8
+
+DEGRADATION_PROCESS_PARAMETERS_DICT:
+  # the probability of triggering a first-order degenerate operation
+  FIRST_BLUR_PROBABILITY: 1.0
+  # first-order degenerate operating parameters
+  RESIZE_PROBABILITY1: [ 0.2, 0.7, 0.1 ]
+  RESIZE_RANGE1: [ 0.15, 1.5 ]
+  GRAY_NOISE_PROBABILITY1: 0.4
+  GAUSSIAN_NOISE_PROBABILITY1: 0.5
+  NOISE_RANGE1: [ 1, 30 ]
+  POISSON_SCALE_RANGE1: [ 0.05, 3 ]
+  JPEG_RANGE1: [ 30, 95 ]
+  # the probability of triggering a second-order degenerate operation
+  SECOND_BLUR_PROBABILITY: 0.8
+  # second-order degenerate operating parameters
+  RESIZE_PROBABILITY2: [ 0.3, 0.4, 0.3 ]
+  RESIZE_RANGE2: [ 0.3, 1.2 ]
+  GRAY_NOISE_PROBABILITY2: 0.4
+  GAUSSIAN_NOISE_PROBABILITY2: 0.5
+  NOISE_RANGE2: [ 1, 25 ]
+  POISSON_SCALE_RANGE2: [ 0.05, 2.5 ]
+  JPEG_RANGE2: [ 30, 95 ]
+
+DATASET:
+  TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_sub_image_384x384"  # 178574 images
+  TRAIN_LR_IMAGES_DIR: ""
+
+  VAL_GT_IMAGES_DIR: "datasets/Set5/X2/GT"
+  VAL_LR_IMAGES_DIR: "datasets/Set5/X2/LR"
+
+MODEL:
+  G:
+    TYPE: "rrdbnet_x2"
+    IN_CHANNELS: 3
+    OUT_CHANNELS: 3
+    CHANNELS: 64
+    GROWTH_CHANNELS: 32
+    NUM_RRDB: 23
+
+TRAIN:
+  RESUME_G: ""
+
+  # train weights
+  G_WEIGHTS_PATH: ""
+
+  # train datasets
+  IMAGE_SIZE: 128
+  BATCH_SIZE: 16  # 178574 / 16 ~= 11160 iters / epoch
+  NUM_WORKERS: 4
+
+  # train solver
+  SOLVER:
+    G:
+      OPTIM:
+        TYPE: "adam"
+        LR: 0.0002
+        BETAS: [ 0.9, 0.99 ]
+
+      LR_SCHEDULER:
+        TYPE: "constant"
+        FACTOR: 1.0
+        TOTAL_ITERS: 90
+
+  # loss config
+  LOSS:
+    PIXEL:
+      TYPE: "l1_loss"
+      WEIGHT: [ 1.0 ]
+
+  # train hyper-parameters
+  EPOCHS: 90  # 90 * 11160 = 1,004,400 ~= 1,000,000 iters
+
+  # train setup
+  LOCAL_RANK: -1
+  RANK: -1
+  WORLD_SIZE: 1
+  DIST_URL: "env://"
+
+  # train results
+  OUTPUT_DIR: "results/train"
+  VERBOSE: True
+
+EVAL:
+  WEIGHTS_PATH: "results/train/realesrnet_x2-df2k_degradation/weights/g_last_checkpoint.pkl"
+  NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
+  ONLY_TEST_Y_CHANNEL: True
