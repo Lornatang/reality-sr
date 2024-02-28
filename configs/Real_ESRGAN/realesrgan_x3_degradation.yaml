@@ -130,6 +130,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/realesrgan_x3-df2k_degradation/weights/g_last_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/realesrgan_x3-df2k_degradation/weights/g_best_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True
