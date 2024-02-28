@@ -257,17 +257,33 @@ class Trainer:
 
     def get_g_model(self):
         model_g_type = self.model_config_dict.G.TYPE
-        if model_g_type == "rrdbnet_x4":
+        if model_g_type == "edsrnet_x2":
+            g_model = edsrnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                 channels=self.model_config_dict.G.get("CHANNELS", 64),
+                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+        elif model_g_type == "edsrnet_x3":
+            g_model = edsrnet_x3(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                 channels=self.model_config_dict.G.get("CHANNELS", 64),
+                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+        elif model_g_type == "edsrnet_x4":
+            g_model = edsrnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                 channels=self.model_config_dict.G.get("CHANNELS", 64),
+                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+        elif model_g_type == "edsrnet_x8":
+            g_model = edsrnet_x8(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                 channels=self.model_config_dict.G.get("CHANNELS", 64),
+                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+        elif model_g_type == "rrdbnet_x4":
             g_model = rrdbnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                  channels=self.model_config_dict.G.get("CHANNELS", 64),
                                  growth_channels=self.model_config_dict.G.get("GROWTH_CHANNELS", 32),
                                  num_rrdb=self.model_config_dict.G.get("NUM_RRDB", 23))
-        if model_g_type == "edsrnet_x4":
-            g_model = edsrnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
-                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                 channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+
         else:
             raise NotImplementedError(f"Model type `{model_g_type}` is not implemented.")
         g_model = g_model.to(self.device)
