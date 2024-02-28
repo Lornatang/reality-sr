@@ -389,7 +389,11 @@ class Trainer:
         elif loss_type == "l2_loss":
             criterion = nn.MSELoss()
         elif loss_type == "feature_loss":
-            criterion = FeatureLoss()
+            criterion = FeatureLoss(
+                self.feature_loss.get("ARCH_NAME", "vgg19"),
+                OmegaConf.to_container(self.feature_loss.get("LAYER_NAME_LIST", ["conv1_2", "conv2_2", "conv3_4", "conv4_4", "conv5_4"])),
+                self.feature_loss.get("NORMALIZE", True),
+            )
         else:
             criterion = nn.BCEWithLogitsLoss()
 

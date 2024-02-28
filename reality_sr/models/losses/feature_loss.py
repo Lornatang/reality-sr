@@ -14,8 +14,8 @@
 import torch
 from torch import Tensor, nn
 from torch.nn import functional as F_torch
-from torchvision import models, transforms
-from torchvision.models.feature_extraction import create_feature_extractor
+
+from reality_sr.models.vgg_feature_extraction import VGGFeatureExtractor
 
 __all__ = [
     "FeatureLoss",
@@ -35,52 +35,26 @@ class FeatureLoss(nn.Module):
 
     def __init__(
             self,
-            feature_model_extractor_nodes=None,
-            feature_model_normalize_mean: list = None,
-            feature_model_normalize_std: list = None,
+            arch_name: str,
+            layer_name_list: list,
+            normalize: bool,
     ) -> None:
         super(FeatureLoss, self).__init__()
-        # Get the name of the specified feature extraction node
-        if feature_model_extractor_nodes is None:
-            feature_model_extractor_nodes = ["features.2", "features.7", "features.16", "features.25", "features.34"]
-        if feature_model_normalize_mean is None:
-            feature_model_normalize_mean = [0.485, 0.456, 0.406]
-        if feature_model_normalize_std is None:
-            feature_model_normalize_std = [0.229, 0.224, 0.225]
-        self.feature_model_extractor_nodes = feature_model_extractor_nodes
-        # Load the VGG19 model trained on the ImageNet dataset.
-        model = models.vgg19(weights=models.VGG19_Weights.IMAGENET1K_V1)
-        # Extract the thirty-sixth layer output in the VGG19 model as the content loss.
-        self.feature_extractor = create_feature_extractor(model, feature_model_extractor_nodes)
+        self.vgg_feature_extractor = VGGFeatureExtractor(
+            arch_name=arch_name,
+            layer_name_list=layer_name_list,
+            normalize=normalize)
 
-        # set to validation mode
-        self.feature_extractor.eval()
+    def forward(self, inputs: Tensor, target: Tensor) -> Tensor:
+        assert inputs.size() == target.size(), "Two tensor must have the same size"
 
-        # The preprocessing method of the input data.
-        # This is the VGG model preprocessing method of the ImageNet dataset.
-        self.normalize = transforms.Normalize(feature_model_normalize_mean, feature_model_normalize_std)
+        device = inputs.device
 
-        # Freeze model parameters.
-        for model_parameters in self.feature_extractor.parameters():
-            model_parameters.requires_grad = False
-
-    def forward(self, sr_tensor: Tensor, gt_tensor: Tensor) -> Tensor:
-        assert sr_tensor.size() == gt_tensor.size(), "Two tensor must have the same size"
-
-        device = sr_tensor.device
+        inputs_features = self.vgg_feature_extractor(inputs)
+        target_features = self.vgg_feature_extractor(target.detach())
 
         loss_list = []
-        # Standardized operations
-        sr_tensor = self.normalize(sr_tensor)
-        gt_tensor = self.normalize(gt_tensor)
+        for k in inputs_features.keys():
+            loss_list.append(F_torch.l1_loss(inputs_features[k], target_features[k]))
 
-        # VGG19 conv3_4 feature extraction
-        sr_feature = self.feature_extractor(sr_tensor)
-        gt_feature = self.feature_extractor(gt_tensor)
-
-        for i in range(len(self.feature_model_extractor_nodes)):
-            loss_list.append(F_torch.l1_loss(sr_feature[self.feature_model_extractor_nodes[i]], gt_feature[self.feature_model_extractor_nodes[i]]))
-
-        loss_list = torch.Tensor([loss_list]).to(device=device)
-
-        return loss_list
+        return torch.Tensor([loss_list]).to(device=device)
