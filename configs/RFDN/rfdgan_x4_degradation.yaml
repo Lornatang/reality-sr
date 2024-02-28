@@ -106,6 +106,9 @@ TRAIN:
       WEIGHT: [ 1.0 ]
     FEATURE:
       TYPE: "feature_loss"
+      ARCH_NAME: "vgg19"
+      LAYER_NAME_LIST: ["conv1_2", "conv2_2", "conv3_4", "conv4_4", "conv5_4"]
+      NORMALIZE: True
       WEIGHT: [ 0.1, 0.1, 1.0, 1.0, 1.0 ]
     ADV:
       TYPE: "bce_with_logits_loss"
