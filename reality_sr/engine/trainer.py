@@ -475,7 +475,7 @@ class Trainer:
             loss_pixel_weight = torch.Tensor(self.pixel_loss_weight).to(device=self.device)
 
             # Initialize the generator gradient
-            self.g_model.zero_grad(set_to_none=True)
+            self.g_model.zero_grad()
 
             # degradation transforms
             gt_usm, gt, lr = self.degradation_transforms(gt, gaussian_kernel1, gaussian_kernel2, sinc_kernel)
@@ -537,7 +537,7 @@ class Trainer:
                 d_parameters.requires_grad = False
 
             # Initialize generator model gradients
-            self.g_model.zero_grad(set_to_none=True)
+            self.g_model.zero_grad()
 
             # Calculate the perceptual loss of the generator, mainly including pixel loss, feature loss and adversarial loss
             with amp.autocast(enabled=self.device.type != "cpu"):
@@ -565,7 +565,7 @@ class Trainer:
                 d_parameters.requires_grad = True
 
             # Initialize the discriminator model gradients
-            self.d_model.zero_grad(set_to_none=True)
+            self.d_model.zero_grad()
 
             # Calculate the classification score of the discriminator model for real samples
             with amp.autocast(enabled=self.device.type != "cpu"):
