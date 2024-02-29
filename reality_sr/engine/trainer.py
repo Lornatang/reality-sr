@@ -65,16 +65,16 @@ def init_train_env(config_dict: DictConfig) -> [DictConfig, torch.device]:
     # Define the name of the configuration file
     save_config_name = "config.yaml"
 
-    resume_g = config_dict.get("RESUME_G", "")
-    resume_d = config_dict.get("RESUME_D", "")
+    resume_g = config_dict.TRAIN.get("RESUME_G", "")
+    resume_d = config_dict.TRAIN.get("RESUME_D", "")
 
     # Handle the resume training case
     if resume_g:
-        checkpoint_path = _resume(config_dict, resume_g)
-        config_dict.TRAIN.RESUME_G = checkpoint_path
+        config_dict = _resume(config_dict, resume_g)
+        config_dict.TRAIN.RESUME_G = resume_g
     elif resume_d:
-        checkpoint_path = _resume(config_dict, resume_d)
-        config_dict.TRAIN.RESUME_D = checkpoint_path
+        config_dict = _resume(config_dict, resume_d)
+        config_dict.TRAIN.RESUME_D = resume_d
     else:
         save_dir = config_dict.TRAIN.OUTPUT_DIR / Path(config_dict.EXP_NAME)
         config_dict.TRAIN.SAVE_DIR = str(increment_name(save_dir))
