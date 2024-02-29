@@ -41,40 +41,40 @@ class DiscriminatorForUNet(nn.Module):
         super(DiscriminatorForUNet, self).__init__()
         self.upsample_method = upsample_method
 
-        self.conv_1 = nn.Conv2d(in_channels, 64, (3, 3), (1, 1), (1, 1))
+        self.conv_1 = nn.Conv2d(in_channels, 64, 3, stride=1, padding=1)
         self.down_block_1 = nn.Sequential(
-            spectral_norm(nn.Conv2d(channels, int(channels * 2), (4, 4), (2, 2), (1, 1), bias=False)),
+            spectral_norm(nn.Conv2d(channels, int(channels * 2), 4, stride=2, padding=1, bias=False)),
             nn.LeakyReLU(0.2, True),
         )
         self.down_block_2 = nn.Sequential(
-            spectral_norm(nn.Conv2d(int(channels * 2), int(channels * 4), (4, 4), (2, 2), (1, 1), bias=False)),
+            spectral_norm(nn.Conv2d(int(channels * 2), int(channels * 4), 4, stride=2, padding=1, bias=False)),
             nn.LeakyReLU(0.2, True),
         )
         self.down_block_3 = nn.Sequential(
-            spectral_norm(nn.Conv2d(int(channels * 4), int(channels * 8), (4, 4), (2, 2), (1, 1), bias=False)),
+            spectral_norm(nn.Conv2d(int(channels * 4), int(channels * 8), 4, stride=2, padding=1, bias=False)),
             nn.LeakyReLU(0.2, True),
         )
         self.up_block_1 = nn.Sequential(
-            spectral_norm(nn.Conv2d(int(channels * 8), int(channels * 4), (3, 3), (1, 1), (1, 1), bias=False)),
+            spectral_norm(nn.Conv2d(int(channels * 8), int(channels * 4), 3, stride=1, padding=1, bias=False)),
             nn.LeakyReLU(0.2, True),
         )
         self.up_block_2 = nn.Sequential(
-            spectral_norm(nn.Conv2d(int(channels * 4), int(channels * 2), (3, 3), (1, 1), (1, 1), bias=False)),
+            spectral_norm(nn.Conv2d(int(channels * 4), int(channels * 2), 3, stride=1, padding=1, bias=False)),
             nn.LeakyReLU(0.2, True),
         )
         self.up_block_3 = nn.Sequential(
-            spectral_norm(nn.Conv2d(int(channels * 2), channels, (3, 3), (1, 1), (1, 1), bias=False)),
+            spectral_norm(nn.Conv2d(int(channels * 2), channels, 3, stride=1, padding=1, bias=False)),
             nn.LeakyReLU(0.2, True),
         )
         self.conv_2 = nn.Sequential(
-            spectral_norm(nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1), bias=False)),
+            spectral_norm(nn.Conv2d(channels, channels, 3, stride=1, padding=1, bias=False)),
             nn.LeakyReLU(0.2, True),
         )
         self.conv_3 = nn.Sequential(
-            spectral_norm(nn.Conv2d(channels, channels, (3, 3), (1, 1), (1, 1), bias=False)),
+            spectral_norm(nn.Conv2d(channels, channels, 3, stride=1, padding=1, bias=False)),
             nn.LeakyReLU(0.2, True),
         )
-        self.conv_4 = nn.Conv2d(channels, out_channels, (3, 3), (1, 1), (1, 1))
+        self.conv_4 = nn.Conv2d(channels, out_channels, 3, stride=1, padding=1)
 
     def forward(self, x: Tensor) -> Tensor:
         conv_1 = self.conv_1(x)
@@ -85,15 +85,15 @@ class DiscriminatorForUNet(nn.Module):
         down_3 = self.down_block_3(down_2)
 
         # Up-sampling
-        down_3 = F_torch.interpolate(down_3, scale_factor=2, mode="bilinear", align_corners=False)
+        down_3 = F_torch.interpolate(down_3, scale_factor=2, mode=self.upsample_method, align_corners=False)
         up_1 = self.up_block_1(down_3)
 
         up_1 = torch.add(up_1, down_2)
-        up_1 = F_torch.interpolate(up_1, scale_factor=2, mode="bilinear", align_corners=False)
+        up_1 = F_torch.interpolate(up_1, scale_factor=2, mode=self.upsample_method, align_corners=False)
         up_2 = self.up_block_2(up_1)
 
         up_2 = torch.add(up_2, down_1)
-        up_2 = F_torch.interpolate(up_2, scale_factor=2, mode="bilinear", align_corners=False)
+        up_2 = F_torch.interpolate(up_2, scale_factor=2, mode=self.upsample_method, align_corners=False)
         up_3 = self.up_block_3(up_2)
 
         up_3 = torch.add(up_3, conv_1)
