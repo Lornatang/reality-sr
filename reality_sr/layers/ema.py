@@ -31,12 +31,12 @@ class ModelEMA(nn.Module):
     Reference: `https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage`
     """
 
-    def __init__(self, model: nn.Module, decay: float = 0.9999, updates: int = 0) -> None:
+    def __init__(self, model: nn.Module, decay: float = 0.999, updates: int = 0) -> None:
         r"""Initialize the ModelEMA.
 
         Args:
             model (nn.Module): The model for which to maintain an EMA.
-            decay (float, optional): The decay rate for the moving average. Default is 0.9999.
+            decay (float, optional): The decay rate for the moving average. Default is 0.999.
             updates (int, optional): The number of updates applied to the moving average. Default is 0.
         """
         super().__init__()

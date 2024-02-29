@@ -523,9 +523,6 @@ class Trainer:
             feature_loss_weight = torch.Tensor(self.feature_loss_weight).to(device=self.device)
             adv_loss_weight = torch.Tensor(self.adv_loss_weight).to(device=self.device)
 
-            # Initialize the generator gradient
-            self.g_model.zero_grad(set_to_none=True)
-
             # degradation transforms
             gt_usm, gt, lr = self.degradation_transforms(gt, gaussian_kernel1, gaussian_kernel2, sinc_kernel)
 
@@ -571,7 +568,7 @@ class Trainer:
             self.d_model.zero_grad(set_to_none=True)
 
             # Calculate the classification score of the discriminator model for real samples
-            with amp.autocast():
+            with amp.autocast(enabled=self.device.type != "cpu"):
                 gt_output = self.d_model(gt)
                 d_loss_gt = self.adv_criterion(gt_output, real_label)
             # Call the gradient scaling function in the mixed precision API to
@@ -579,7 +576,7 @@ class Trainer:
             self.scaler.scale(d_loss_gt).backward()
 
             # Calculate the classification score of the discriminator model for fake samples
-            with amp.autocast():
+            with amp.autocast(enabled=self.device.type != "cpu"):
                 sr_output = self.d_model(sr.detach().clone())
                 d_loss_sr = self.adv_criterion(sr_output, fake_label)
                 # Calculate the total discriminator loss value
@@ -592,17 +589,21 @@ class Trainer:
             self.scaler.update()
             # Finish training the discriminator model
 
+            # update exponential average model weights
+            self.ema.update(self.g_model)
+
             # Calculate the score of the discriminator on real samples and fake samples,
             # the score of real samples is close to 1, and the score of fake samples is close to 0
             d_gt_prob = torch.sigmoid_(torch.mean(gt_output.detach()))
             d_sr_prob = torch.sigmoid_(torch.mean(sr_output.detach()))
 
             # Statistical accuracy and loss value for terminal data output
-            self.pixel_losses.update(pixel_loss.item(), lr.size(0))
-            self.feature_losses.update(feature_loss.item(), lr.size(0))
-            self.adv_losses.update(adv_loss.item(), lr.size(0))
-            self.d_gt_probes.update(d_gt_prob.item(), lr.size(0))
-            self.d_sr_probes.update(d_sr_prob.item(), lr.size(0))
+            batch_size = lr.size(0)
+            self.pixel_losses.update(pixel_loss.item(), batch_size)
+            self.feature_losses.update(feature_loss.item(), batch_size)
+            self.adv_losses.update(adv_loss.item(), batch_size)
+            self.d_gt_probes.update(d_gt_prob.item(), batch_size)
+            self.d_sr_probes.update(d_sr_prob.item(), batch_size)
 
             # Calculate the time it takes to fully train a batch of data
             self.batch_time.update(time.time() - end)

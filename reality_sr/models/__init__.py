@@ -16,4 +16,4 @@ from .edsrnet import *
 from .losses import *
 from .rfdnet import *
 from .rrdbnet import *
-from .vgg_feature_extraction import *
+from .vgg_feature_extractor import *
