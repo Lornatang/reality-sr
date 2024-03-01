@@ -97,25 +97,42 @@ def load_checkpoint(weights_path: str | Path, map_location: torch.device | str =
     return model
 
 
-def save_checkpoint(checkpoint: dict, is_best: bool, save_dir: str | Path, model_name: str = "", best_model_name: str = "") -> None:
+def save_checkpoint(
+        checkpoint: dict,
+        save_dir: str | Path,
+        is_best: bool,
+        current_model_name: str | Path,
+        best_model_name: str | Path,
+        last_model_name: str | Path,
+) -> None:
     r"""Save checkpoint to the disk.
 
     Args:
         checkpoint (dict): The checkpoint to be saved.
+        save_dir (str or Path): The directory where to save the checkpoint.
         is_best (bool): Whether this checkpoint is the best so far.
-        save_dir (str): The directory where to save the checkpoint.
-        model_name (str, optional): The name of the model. Defaults to "".
-        best_model_name (str, optional): The name of the best model. Defaults to "".
+        current_model_name (str or Path, optional): The name of the current model.
+        best_model_name (str or Path, optional): The name of the best model.
+        last_model_name (str or Path, optional): The name of the model.
     """
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+    if isinstance(save_dir, str):
+        save_dir = Path(save_dir)
+    if isinstance(current_model_name, str):
+        current_model_name = Path(current_model_name)
+    if isinstance(best_model_name, str):
+        best_model_name = Path(best_model_name)
 
-    file_name = Path(save_dir) / Path(model_name + ".pkl")
-    torch.save(checkpoint, file_name)
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    current_model_path = save_dir / current_model_name
+    last_model_path = save_dir / last_model_name
+
+    torch.save(checkpoint, current_model_path)
+    torch.save(checkpoint, last_model_path)
 
     if is_best:
-        best_filename = os.path.join(save_dir, best_model_name + ".pkl")
-        shutil.copyfile(file_name, best_filename)
+        best_filename = os.path.join(save_dir, best_model_name)
+        shutil.copyfile(current_model_path, best_filename)
 
 
 def strip_optimizer(checkpoint_path: str | Path, epoch: int) -> None:

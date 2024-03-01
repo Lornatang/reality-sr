@@ -226,6 +226,9 @@ class Trainer:
         # Initialize the mixed precision method
         self.scaler = amp.GradScaler(enabled=self.device.type != "cpu")
 
+        # Define the path to save the model
+        self.save_ckpt_dir = Path(self.save_dir) / "weights"
+
         if self.verbose:
             g_model_info = get_model_info(self.g_model, self.train_config_dict.IMAGE_SIZE, self.device)
             LOGGER.info(f"G model: {self.g_model}")
@@ -684,8 +687,14 @@ class Trainer:
             "scheduler": self.g_lr_scheduler.state_dict(),
             "epoch": self.current_epoch,
         }
-        save_ckpt_dir = Path(self.save_dir) / "weights"
-        save_checkpoint(ckpt, is_best, save_ckpt_dir, model_name="g_last_checkpoint", best_model_name="g_best_checkpoint")
+        save_checkpoint(
+            ckpt,
+            self.save_ckpt_dir,
+            is_best,
+            current_model_name=f"g_epoch_{self.current_epoch:04d}.pkl",
+            best_model_name="g_best_checkpoint.pkl",
+            last_model_name="g_last_checkpoint.pkl",
+        )
 
         if self.phase == "gan":
             # update d lr
@@ -700,7 +709,14 @@ class Trainer:
                 "scheduler": self.d_lr_scheduler.state_dict(),
                 "epoch": self.current_epoch,
             }
-            save_checkpoint(ckpt, is_best, save_ckpt_dir, model_name="d_last_checkpoint", best_model_name="d_best_checkpoint")
+            save_checkpoint(
+                ckpt,
+                self.save_ckpt_dir,
+                is_best,
+                current_model_name=f"d_epoch_{self.current_epoch:04d}.pkl",
+                best_model_name="d_best_checkpoint.pkl",
+                last_model_name="d_last_checkpoint.pkl",
+            )
 
         del ckpt
 
