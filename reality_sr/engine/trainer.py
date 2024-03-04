@@ -554,7 +554,8 @@ class Trainer:
                 sr = self.g_model(lr)
                 pixel_loss = self.pixel_criterion(sr, gt_usm)
                 feature_loss = self.feature_criterion(sr, gt_usm)
-                adv_loss = self.adv_criterion(self.d_model(sr), real_label)
+                sr_output = self.d_model(sr)
+                adv_loss = self.adv_criterion(sr_output, real_label)
                 pixel_loss = torch.sum(torch.mul(pixel_loss_weight, pixel_loss))
                 feature_loss = torch.sum(torch.mul(feature_loss_weight, feature_loss))
                 adv_loss = torch.sum(torch.mul(adv_loss_weight, adv_loss))
@@ -654,8 +655,13 @@ class Trainer:
             self.d_gt_probes = AverageMeter("D(GT)", ":6.3f")
             self.d_sr_probes = AverageMeter("D(SR)", ":6.3f")
             self.progress = ProgressMeter(self.num_train_batch,
-                                          [self.batch_time, self.data_time, self.pixel_losses, self.feature_losses, self.adv_losses,
-                                           self.d_gt_probes, self.d_sr_probes],
+                                          [self.batch_time,
+                                           self.data_time,
+                                           self.pixel_losses,
+                                           self.feature_losses,
+                                           self.adv_losses,
+                                           self.d_gt_probes,
+                                           self.d_sr_probes],
                                           prefix=f"Epoch: [{self.current_epoch}]")
 
     def train_one_epoch(self):
