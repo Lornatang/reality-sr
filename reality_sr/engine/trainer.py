@@ -481,7 +481,7 @@ class Trainer:
             gaussian_kernel1 = gaussian_kernel1.to(device=self.device, non_blocking=True)
             gaussian_kernel2 = gaussian_kernel2.to(device=self.device, non_blocking=True)
             sinc_kernel = sic_kernel.to(device=self.device, non_blocking=True)
-            loss_pixel_weight = torch.Tensor(self.pixel_loss_weight).to(device=self.device)
+            loss_pixel_weight = torch.tensor(self.pixel_loss_weight, device=self.device)
 
             # degradation transforms
             gt_usm, gt, lr = self.degradation_transforms(gt, gaussian_kernel1, gaussian_kernel2, sinc_kernel)
@@ -528,9 +528,9 @@ class Trainer:
             gaussian_kernel1 = gaussian_kernel1.to(device=self.device, non_blocking=True)
             gaussian_kernel2 = gaussian_kernel2.to(device=self.device, non_blocking=True)
             sinc_kernel = sic_kernel.to(device=self.device, non_blocking=True)
-            pixel_loss_weight = torch.Tensor(self.pixel_loss_weight).to(device=self.device)
-            feature_loss_weight = torch.Tensor(self.feature_loss_weight).to(device=self.device)
-            adv_loss_weight = torch.Tensor(self.adv_loss_weight).to(device=self.device)
+            pixel_loss_weight = torch.tensor(self.pixel_loss_weight, device=self.device)
+            feature_loss_weight = torch.tensor(self.feature_loss_weight, device=self.device)
+            adv_loss_weight = torch.tensor(self.adv_loss_weight, device=self.device)
 
             # degradation transforms
             gt_usm, gt, lr = self.degradation_transforms(gt, gaussian_kernel1, gaussian_kernel2, sinc_kernel)
