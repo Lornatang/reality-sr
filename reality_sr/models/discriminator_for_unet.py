@@ -39,6 +39,9 @@ class DiscriminatorForUNet(nn.Module):
             upsample_method (str, optional): The upsample method. Default is "bilinear".
         """
         super(DiscriminatorForUNet, self).__init__()
+        if out_channels != 1:
+            raise ValueError("The output channels must be 1.")
+
         self.upsample_method = upsample_method
 
         self.conv_1 = nn.Conv2d(in_channels, 64, 3, stride=1, padding=1)

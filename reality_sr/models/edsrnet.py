@@ -22,7 +22,7 @@ from reality_sr.utils.ops import initialize_weights
 
 __all__ = [
     "EDSRNet",
-    "edsrnet_x2", "edsrnet_x3", "edsrnet_x4", "edsrnet_x8",
+    "edsrnet_x2", "edsrnet_x3", "edsrnet_x4",
 ]
 
 
@@ -98,8 +98,4 @@ def edsrnet_x3(upscale_factor=3, **kwargs) -> EDSRNet:
 
 
 def edsrnet_x4(upscale_factor=4, **kwargs) -> EDSRNet:
-    return EDSRNet(upscale_factor=upscale_factor, **kwargs)
-
-
-def edsrnet_x8(upscale_factor=8, **kwargs) -> EDSRNet:
     return EDSRNet(upscale_factor=upscale_factor, **kwargs)

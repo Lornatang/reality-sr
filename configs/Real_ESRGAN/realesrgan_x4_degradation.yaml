@@ -105,16 +105,20 @@ TRAIN:
   LOSS:
     PIXEL:
       TYPE: "l1_loss"
-      WEIGHT: [ 1.0 ]
+      WEIGHT: 1.0
     FEATURE:
       TYPE: "feature_loss"
       ARCH_NAME: "vgg19"
-      LAYER_NAME_LIST: ["conv1_2", "conv2_2", "conv3_4", "conv4_4", "conv5_4"]
+      LAYER_WEIGHT_DICT:
+        "conv1_2": 0.1
+        "conv2_2": 0.1
+        "conv3_4": 1.0
+        "conv4_4": 1.0
+        "conv5_4": 1.0
       NORMALIZE: True
-      WEIGHT: [ 0.1, 0.1, 1.0, 1.0, 1.0 ]
     ADV:
       TYPE: "bce_with_logits_loss"
-      WEIGHT: [ 0.1 ]
+      WEIGHT: 0.1
 
   # train hyper-parameters
   EPOCHS: 36  # 36 * 11160 = 401,760 ~= 400,000 iters
