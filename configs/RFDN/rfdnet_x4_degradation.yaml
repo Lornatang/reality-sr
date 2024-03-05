@@ -85,7 +85,7 @@ TRAIN:
   LOSS:
     PIXEL:
       TYPE: "l1_loss"
-      WEIGHT: [ 1.0 ]
+      WEIGHT: 0.1
 
   # train hyper-parameters
   EPOCHS: 359  # 359 * 2790 = 1,001,610 ~= 1,000,000 iters
