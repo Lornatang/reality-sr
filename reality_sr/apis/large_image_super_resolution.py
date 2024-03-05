@@ -18,8 +18,7 @@ import numpy as np
 from omegaconf import DictConfig
 
 from reality_sr.utils.events import LOGGER
-from reality_sr.utils.general import get_all_filenames
-from reality_sr.utils.ops import get_window_position
+from reality_sr.utils.ops import get_all_filenames, get_window_position
 from .super_resolution import SuperResolutionInferencer
 
 __all__ = [

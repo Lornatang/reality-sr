@@ -23,7 +23,7 @@ from torch import Tensor
 from reality_sr.engine.backend import SuperResolutionBackend
 from reality_sr.utils.envs import select_device
 from reality_sr.utils.events import LOGGER
-from reality_sr.utils.general import get_all_filenames
+from reality_sr.utils.ops import get_all_filenames
 from reality_sr.utils.imgproc import image_to_tensor, tensor_to_image
 from reality_sr.utils.torch_utils import get_model_info
 

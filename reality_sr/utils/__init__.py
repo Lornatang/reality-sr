@@ -16,7 +16,6 @@ from .color import *
 from .diffjepg import *
 from .envs import *
 from .events import *
-from .general import *
 from .imgproc import *
 from .matlab_functions import *
 from .ops import *

@@ -15,7 +15,7 @@ import torch
 from torch import Tensor, nn
 
 from reality_sr.utils.color import rgb_to_ycbcr_torch
-from reality_sr.utils.general import check_tensor_shape
+from reality_sr.utils.ops import check_tensor_shape
 
 __all__ = [
     "mse_torch",

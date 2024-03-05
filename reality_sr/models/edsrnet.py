@@ -38,7 +38,7 @@ class EDSRNet(nn.Module):
             mean: Tensor = None,
     ) -> None:
         super(EDSRNet, self).__init__()
-        assert upscale_factor in (2, 3, 4, 8), "Upscale factor should be 2, 3, 4 or 8."
+        assert upscale_factor in (2, 3, 4), "Upscale factor should be 2, 3 or 4."
 
         self.upscale_factor = upscale_factor
         if mean is not None:

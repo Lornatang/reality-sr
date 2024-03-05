@@ -26,7 +26,7 @@ import numpy as np
 from torchvision.datasets.folder import IMG_EXTENSIONS
 from tqdm import tqdm
 
-from reality_sr.utils.general import check_dir, get_all_filenames
+from reality_sr.utils.ops import check_dir, get_all_filenames
 
 
 def get_opts() -> argparse.Namespace:

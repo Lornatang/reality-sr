@@ -12,24 +12,25 @@
 # limitations under the License.
 # ==============================================================================
 import torch
-from reality_sr.layers.blocks import ResidualFeatureDistillationBlock
-from reality_sr.utils.ops import initialize_weights
 from torch import Tensor, nn
 
+from reality_sr.layers.blocks import ResidualFeatureDistillationBlock
+from reality_sr.utils.ops import initialize_weights
+
 __all__ = [
-    "ResidualFeatureDistillationNet",
-    "rfdnet_x2", "rfdnet_x3", "rfdnet_x4", "rfdnet_x8",
+    "RFDNet",
+    "rfdnet_x2", "rfdnet_x3", "rfdnet_x4",
 ]
 
 
-class ResidualFeatureDistillationNet(nn.Module):
+class RFDNet(nn.Module):
     r"""Residual feature distillation block.
     `Residual Feature Distillation Network for Lightweight Image Super-Resolution` https://arxiv.org/abs/2009.11551v1 paper.
     """
 
     def __init__(self, in_channels: int = 3, out_channels: int = 3, channels: int = 50, upscale_factor: int = 4) -> None:
-        super(ResidualFeatureDistillationNet, self).__init__()
-        assert upscale_factor in (2, 3, 4, 8), "Upscale factor should be 2, 3, 4 or 8."
+        super(RFDNet, self).__init__()
+        assert upscale_factor in (2, 3, 4), "Upscale factor should be 2, 3 or 4."
         self.upscale_factor = upscale_factor
 
         self.conv_1 = nn.Conv2d(in_channels, channels, 3, stride=1, padding=1)
@@ -71,17 +72,13 @@ class ResidualFeatureDistillationNet(nn.Module):
         return torch.clamp_(x, 0, 1)
 
 
-def rfdnet_x2(upscale_factor=2, **kwargs) -> ResidualFeatureDistillationNet:
-    return ResidualFeatureDistillationNet(upscale_factor=upscale_factor, **kwargs)
+def rfdnet_x2(upscale_factor=2, **kwargs) -> RFDNet:
+    return RFDNet(upscale_factor=upscale_factor, **kwargs)
 
 
-def rfdnet_x3(upscale_factor=3, **kwargs) -> ResidualFeatureDistillationNet:
-    return ResidualFeatureDistillationNet(upscale_factor=upscale_factor, **kwargs)
+def rfdnet_x3(upscale_factor=3, **kwargs) -> RFDNet:
+    return RFDNet(upscale_factor=upscale_factor, **kwargs)
 
 
-def rfdnet_x4(upscale_factor=4, **kwargs) -> ResidualFeatureDistillationNet:
-    return ResidualFeatureDistillationNet(upscale_factor=upscale_factor, **kwargs)
-
-
-def rfdnet_x8(upscale_factor=8, **kwargs) -> ResidualFeatureDistillationNet:
-    return ResidualFeatureDistillationNet(upscale_factor=upscale_factor, **kwargs)
+def rfdnet_x4(upscale_factor=4, **kwargs) -> RFDNet:
+    return RFDNet(upscale_factor=upscale_factor, **kwargs)

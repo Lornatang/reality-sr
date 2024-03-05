@@ -33,7 +33,7 @@ from reality_sr.utils.checkpoint import load_state_dict, save_checkpoint, strip_
 from reality_sr.utils.diffjepg import DiffJPEG
 from reality_sr.utils.envs import select_device, set_seed_everything
 from reality_sr.utils.events import LOGGER, AverageMeter, ProgressMeter
-from reality_sr.utils.general import increment_name
+from reality_sr.utils.ops import increment_name
 from reality_sr.utils.imgproc import USMSharp
 from reality_sr.utils.torch_utils import get_model_info
 from .evaler import Evaler

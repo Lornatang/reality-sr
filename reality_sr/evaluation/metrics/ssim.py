@@ -19,7 +19,7 @@ from torch import nn, Tensor
 from torch.nn import functional as F_torch
 
 from reality_sr.utils.color import rgb_to_ycbcr_torch
-from reality_sr.utils.general import check_tensor_shape
+from reality_sr.utils.ops import check_tensor_shape
 from reality_sr.utils.matlab_functions import fspecial_gaussian
 
 __all__ = [
