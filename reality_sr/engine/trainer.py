@@ -179,7 +179,7 @@ class Trainer:
                 LOGGER.warning(f"Loading state_dict from {self.resume_g} failed, train from scratch...")
 
         # losses
-        self.pixel_criterion = self.define_loss(self.pixel_loss_type)
+        self.pixel_criterion = self.get_loss(self.pixel_loss_type)
 
         # For the GAN phase
         if self.phase == "gan":
@@ -193,8 +193,8 @@ class Trainer:
                 else:
                     LOGGER.warning(f"Loading state_dict from {self.resume_d} failed, train from scratch...")
 
-            self.feature_criterion = self.define_loss(self.feature_loss_type)
-            self.adv_criterion = self.define_loss(self.adv_loss_type)
+            self.feature_criterion = self.get_loss(self.feature_loss_type)
+            self.adv_criterion = self.get_loss(self.adv_loss_type)
 
         # tensorboard
         self.tblogger = SummaryWriter(self.save_dir)
@@ -404,7 +404,7 @@ class Trainer:
         self.d_lr_scheduler.load_state_dict(self.d_checkpoint["scheduler"])
         LOGGER.info(f"Resumed d model from epoch {self.start_epoch}")
 
-    def define_loss(self, loss_type: str) -> Any:
+    def get_loss(self, loss_type: str) -> Any:
         if loss_type not in ["l1_loss", "l2_loss", "feature_loss", "bce_with_logits_loss"]:
             raise NotImplementedError(
                 f"Loss type {loss_type} is not implemented. Only support [`l1_loss`, `l2_loss`, `feature_loss`, `bce_with_logits_loss`].")
