@@ -278,11 +278,11 @@ class Trainer:
             g_model = rfdnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                 channels=self.model_config_dict.G.get("CHANNELS", 50))
-        elif model_g_type == "rrdbnet_x3":
+        elif model_g_type == "rfdnet_x3":
             g_model = rfdnet_x3(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                 channels=self.model_config_dict.G.get("CHANNELS", 50))
-        elif model_g_type == "rrdbnet_x4":
+        elif model_g_type == "rfdnet_x4":
             g_model = rfdnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                 channels=self.model_config_dict.G.get("CHANNELS", 50))
