@@ -18,6 +18,10 @@ from typing import Any
 
 import torch.utils.data
 from omegaconf import DictConfig, OmegaConf
+from torch import Tensor, nn, optim
+from torch.cuda import amp
+from torch.utils.tensorboard import SummaryWriter
+
 from reality_sr.data.degenerated_image_dataset import DegeneratedImageDataset
 from reality_sr.data.degradations import degradation_process
 from reality_sr.data.paired_image_dataset import PairedImageDataset
@@ -32,10 +36,6 @@ from reality_sr.utils.events import LOGGER, AverageMeter, ProgressMeter
 from reality_sr.utils.imgproc import USMSharp
 from reality_sr.utils.ops import increment_name
 from reality_sr.utils.torch_utils import get_model_info
-from torch import Tensor, nn, optim
-from torch.cuda import amp
-from torch.utils.tensorboard import SummaryWriter
-
 from .evaler import Evaler
 
 
@@ -274,6 +274,18 @@ class Trainer:
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                  channels=self.model_config_dict.G.get("CHANNELS", 64),
                                  num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+        elif model_g_type == "rfdnet_x2":
+            g_model = rfdnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                channels=self.model_config_dict.G.get("CHANNELS", 50))
+        elif model_g_type == "rrdbnet_x3":
+            g_model = rfdnet_x3(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                channels=self.model_config_dict.G.get("CHANNELS", 50))
+        elif model_g_type == "rrdbnet_x4":
+            g_model = rfdnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                channels=self.model_config_dict.G.get("CHANNELS", 50))
         elif model_g_type == "rrdbnet_x2":
             g_model = rrdbnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
