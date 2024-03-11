@@ -1,5 +1,5 @@
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "rfdnet_x4-df2k" # Name of the experiment
+EXP_NAME: "carnet_x4-df2k" # Name of the experiment
 PHASE: "psnr" # psnr, gan
 UPSCALE_FACTOR: 4
 
@@ -52,7 +52,7 @@ DATASET:
 
 MODEL:
   G:
-    TYPE: "rfdnet_x4"
+    TYPE: "carnet_x4"
     IN_CHANNELS: 3
     OUT_CHANNELS: 3
     CHANNELS: 50
@@ -103,6 +103,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/rfdnet_x4-df2k/weights/g_last_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/carnet_x4-df2k/weights/g_last_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True

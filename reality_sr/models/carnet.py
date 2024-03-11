@@ -30,7 +30,7 @@ class CARNet(nn.Module):
             self,
             in_channels: int = 3,
             out_channels: int = 3,
-            channels: int = 64,
+            channels: int = 50,
             upscale_factor: int = 4,
             image_range: float = 255.,
             mean: Tensor = None,
@@ -76,8 +76,6 @@ class CARNet(nn.Module):
         
         # Final output layer
         self.conv_5 = nn.Conv2d(channels, out_channels, (3, 3), 1, 1)
-
-        self.register_buffer("mean", Tensor([0.4563, 0.4402, 0.4056]).view(1, 3, 1, 1))
 
         initialize_weights(self.modules())
 
