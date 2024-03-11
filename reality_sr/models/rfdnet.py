@@ -24,9 +24,7 @@ __all__ = [
 
 
 class RFDNet(nn.Module):
-    r"""Residual feature distillation block.
-    `Residual Feature Distillation Network for Lightweight Image Super-Resolution` https://arxiv.org/abs/2009.11551v1 paper.
-    """
+    r"""PyTorch implements `Residual Feature Distillation Network for Lightweight Image Super-Resolution` paper."""
 
     def __init__(self, in_channels: int = 3, out_channels: int = 3, channels: int = 50, upscale_factor: int = 4) -> None:
         super(RFDNet, self).__init__()

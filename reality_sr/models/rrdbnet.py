@@ -25,6 +25,7 @@ __all__ = [
 
 
 class RRDBNet(nn.Module):
+    r"""PyTorch implements `ESRGAN: Enhanced Super-Resolution Generative Adversarial Networks` paper."""
     def __init__(
             self,
             in_channels: int = 3,

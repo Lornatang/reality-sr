@@ -16,8 +16,50 @@ from torch import Tensor, nn
 from torch.nn import functional as F_torch
 
 __all__ = [
-    "EnhancedSpatialAttention", "ResidualConvBlock", "ResidualDenseBlock", "ResidualResidualDenseBlock", "ResidualFeatureDistillationBlock",
+    "CascadingBlock", "EnhancedSpatialAttention", "ResidualConvBlock", "ResidualDenseBlock", "ResidualResidualDenseBlock",
+    "ResidualFeatureDistillationBlock",
 ]
+
+
+class CascadingBlock(nn.Module):
+    r"""Residual convolutional block.
+    `Enhanced Deep Residual Networks for Single Image Super-Resolution` https://arxiv.org/abs/1707.02921 paper.
+    """
+
+    def __init__(self, channels: int) -> None:
+        super(CascadingBlock, self).__init__()
+        self.rcrb_1 = ResidualConvReLUBlock(channels)
+        self.conv_1 = nn.Sequential(
+            nn.Conv2d(int(channels * 2), channels, 1, stride=1, padding=0),
+            nn.ReLU(True),
+        )
+
+        self.rcrb_2 = ResidualConvReLUBlock(channels)
+        self.conv_2 = nn.Sequential(
+            nn.Conv2d(int(channels * 3), channels, 1, stride=1, padding=0),
+            nn.ReLU(True),
+        )
+
+        self.rcrb_3 = ResidualConvReLUBlock(channels)
+        self.conv_3 = nn.Sequential(
+            nn.Conv2d(int(channels * 4), channels, 1, stride=1, padding=0),
+            nn.ReLU(True),
+        )
+
+    def forward(self, x: Tensor) -> Tensor:
+        rcrb_1 = self.rcrb_1(x)
+        concat_1 = torch.cat([rcrb_1, x], 1)
+        conv_1 = self.conv_1(concat_1)
+
+        rcrb_2 = self.rcrb_2(conv_1)
+        concat_2 = torch.cat([concat_1, rcrb_2], 1)
+        conv_2 = self.conv_2(concat_2)
+
+        rcrb_3 = self.rcrb_3(conv_2)
+        concat_3 = torch.cat([concat_2, rcrb_3], 1)
+        conv_3 = self.conv_3(concat_3)
+
+        return conv_3
 
 
 class EnhancedSpatialAttention(nn.Module):
@@ -79,6 +121,24 @@ class ResidualConvBlock(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         out = self.rcb(x)
         return torch.add(out, x)
+
+
+class ResidualConvReLUBlock(ResidualConvBlock):
+    r"""Residual convolutional and relu block.
+    `Fast, Accurate, and Lightweight Super-Resolution with Cascading Residual Network` https://arxiv.org/abs/1803.08664v5 paper.
+
+    Attributes:
+        rcb (nn.Sequential): The residual convolutional block.
+    """
+
+    def __init__(self, channels: int) -> None:
+        super().__init__(channels=channels)
+        self.relu = nn.ReLU(True)
+
+    def forward(self, x: Tensor) -> Tensor:
+        out = self.rcb(x)
+        out = torch.add(out, x)
+        return self.relu(out)
 
 
 class ResidualDenseBlock(nn.Module):

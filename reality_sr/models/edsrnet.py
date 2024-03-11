@@ -27,6 +27,7 @@ __all__ = [
 
 
 class EDSRNet(nn.Module):
+    """PyTorch implements `Enhanced Deep Residual Networks for Single Image Super-Resolution` paper """
     def __init__(
             self,
             in_channels: int = 3,
