@@ -1,12 +1,12 @@
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "realesrnet_x4-df2k_degradation" # Name of the experiment
+EXP_NAME: "rfdnet_x4-df2k" # Name of the experiment
 PHASE: "psnr" # psnr, gan
 UPSCALE_FACTOR: 4
 
 DEGRADATION_MODEL_PARAMETERS_DICT:
   SINC_KERNEL_SIZE: 21
   GAUSSIAN_KERNEL_RANGE: [ 7, 9, 11, 13, 15, 17, 19, 21 ]
-  GAUSSIAN_KERNEL_TYPE: [ "isotropic", "anisotropic","generalized_isotropic", "generalized_anisotropic","plateau_isotropic", "plateau_anisotropic" ]
+  GAUSSIAN_KERNEL_TYPE: [ "ISOTROPIC", "ANISOTROPIC","GENERALIZED_ISOTROPIC", "GENERALIZED_ANISOTROPIC","PLATEAU_ISOTROPIC", "PLATEAU_ANISOTROPIC" ]
   # first-order degradation parameters
   GAUSSIAN_KERNEL_PROBABILITY1: [ 0.45, 0.25, 0.12, 0.03, 0.12, 0.03 ]
   SINC_KERNEL_PROBABILITY1: 0.1
@@ -44,7 +44,7 @@ DEGRADATION_PROCESS_PARAMETERS_DICT:
   JPEG_RANGE2: [ 30, 95 ]
 
 DATASET:
-  TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_multiscale_sub_image_384x384"  # 178574 images
+  TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_multiscale_sub_image_384x384"  # 178,574 images
   TRAIN_LR_IMAGES_DIR: ""
 
   VAL_GT_IMAGES_DIR: "datasets/Set5/X4/GT"
@@ -52,12 +52,12 @@ DATASET:
 
 MODEL:
   G:
-    TYPE: "rrdbnet_x4"
+    TYPE: "rfdnet_x4"
     IN_CHANNELS: 3
     OUT_CHANNELS: 3
-    CHANNELS: 64
-    GROWTH_CHANNELS: 32
-    NUM_RRDB: 23
+    CHANNELS: 50
+    IMAGE_RANGE: 255.
+    MEAN: [ 0.4488, 0.4371, 0.4040 ]
 
 TRAIN:
   RESUME_G: ""
@@ -67,7 +67,7 @@ TRAIN:
 
   # train datasets
   IMAGE_SIZE: 256
-  BATCH_SIZE: 16  # 178574 / 16 ~= 11160 iters / epoch
+  BATCH_SIZE: 64  # 178,574 / 64 ~= 2,790 iters / epoch
   NUM_WORKERS: 4
 
   # train solver
@@ -75,13 +75,13 @@ TRAIN:
     G:
       OPTIM:
         TYPE: "adam"
-        LR: 0.0002
-        BETAS: [ 0.9, 0.99 ]
+        LR: 0.0005
+        BETAS: [ 0.9, 0.999 ]
 
       LR_SCHEDULER:
-        TYPE: "constant"
-        FACTOR: 1.0
-        TOTAL_ITERS: 90
+        TYPE: "step_lr"
+        STEP_SIZE: 72  # epochs / 5
+        GAMMA: 0.5
 
   # loss config
   LOSS:
@@ -90,7 +90,7 @@ TRAIN:
       WEIGHT: 1.0
 
   # train hyper-parameters
-  EPOCHS: 90  # 90 * 11160 = 1,004,400 ~= 1,000,000 iters
+  EPOCHS: 359  # 359 * 2790 = 1,001,610 ~= 1,000,000 iters
 
   # train setup
   LOCAL_RANK: -1
@@ -103,6 +103,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/realesrnet_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/rfdnet_x4-df2k/weights/g_last_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True

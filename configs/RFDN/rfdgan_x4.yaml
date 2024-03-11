@@ -1,12 +1,12 @@
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "realesrgan_x4-df2k_degradation" # Name of the experiment
+EXP_NAME: "rfdgan_x4-df2k" # Name of the experiment
 PHASE: "gan" # psnr, gan
 UPSCALE_FACTOR: 4
 
 DEGRADATION_MODEL_PARAMETERS_DICT:
   SINC_KERNEL_SIZE: 21
   GAUSSIAN_KERNEL_RANGE: [ 7, 9, 11, 13, 15, 17, 19, 21 ]
-  GAUSSIAN_KERNEL_TYPE: [ "isotropic", "anisotropic","generalized_isotropic", "generalized_anisotropic","plateau_isotropic", "plateau_anisotropic" ]
+  GAUSSIAN_KERNEL_TYPE: [ "ISOTROPIC", "ANISOTROPIC","GENERALIZED_ISOTROPIC", "GENERALIZED_ANISOTROPIC","PLATEAU_ISOTROPIC", "PLATEAU_ANISOTROPIC" ]
   # first-order degradation parameters
   GAUSSIAN_KERNEL_PROBABILITY1: [ 0.45, 0.25, 0.12, 0.03, 0.12, 0.03 ]
   SINC_KERNEL_PROBABILITY1: 0.1
@@ -52,12 +52,12 @@ DATASET:
 
 MODEL:
   G:
-    TYPE: "rrdbnet_x4"
+    TYPE: "rfdnet_x4"
     IN_CHANNELS: 3
     OUT_CHANNELS: 3
-    CHANNELS: 64
-    GROWTH_CHANNELS: 32
-    NUM_RRDB: 23
+    CHANNELS: 50
+    IMAGE_RANGE: 255.
+    MEAN: [ 0.4488, 0.4371, 0.4040 ]
   D:
     TYPE: "discriminator_for_unet"
     IN_CHANNELS: 3
@@ -70,12 +70,12 @@ TRAIN:
   RESUME_D: ""
 
   # train weights
-  G_WEIGHTS_PATH: "results/train/realesrnet_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
+  G_WEIGHTS_PATH: "results/train/rfdnet_x4-df2k/weights/g_last_checkpoint.pkl"
   D_WEIGHTS_PATH: ""
 
   # train datasets
-  IMAGE_SIZE: 256
-  BATCH_SIZE: 16  # 178574 / 16 ~= 11160 iters / epoch
+  IMAGE_SIZE: 192
+  BATCH_SIZE: 64  # 178,574 / 64 ~= 2,790 iters / epoch
   NUM_WORKERS: 4
 
   # train solver
@@ -84,22 +84,22 @@ TRAIN:
       OPTIM:
         TYPE: "adam"
         LR: 0.0001
-        BETAS: [ 0.9, 0.99 ]
+        BETAS: [ 0.9, 0.999 ]
 
       LR_SCHEDULER:
         TYPE: "constant"
         FACTOR: 1.0
-        TOTAL_ITERS: 36
+        TOTAL_ITERS: 143
     D:
       OPTIM:
         TYPE: "adam"
         LR: 0.0001
-        BETAS: [ 0.9, 0.99 ]
+        BETAS: [ 0.9, 0.999 ]
 
       LR_SCHEDULER:
         TYPE: "constant"
         FACTOR: 1.0
-        TOTAL_ITERS: 36
+        TOTAL_ITERS: 143
 
   # loss config
   LOSS:
@@ -121,7 +121,7 @@ TRAIN:
       WEIGHT: 0.1
 
   # train hyper-parameters
-  EPOCHS: 36  # 36 * 11160 = 401,760 ~= 400,000 iters
+  EPOCHS: 143  # 143 * 2,790 = 401,760 ~= 400,000 iters
 
   # train setup
   LOCAL_RANK: -1
@@ -134,6 +134,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/realesrgan_x4-df2k_degradation/weights/g_best_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/rfdgan_x4-df2k/weights/g_best_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True

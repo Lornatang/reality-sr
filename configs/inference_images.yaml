@@ -1,4 +1,4 @@
 DEVICE: "0"
-WEIGHTS_PATH: "results/pretrained_models/realesrgan_x4-df2k_degradation.pkl"
+WEIGHTS_PATH: "results/pretrained_models/realesrgan_x4-df2k.pkl"
 INPUTS: "demo/data"
 OUTPUT: "demo/output"

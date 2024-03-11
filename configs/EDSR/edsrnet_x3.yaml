@@ -1,12 +1,12 @@
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "rfdgan_x4-df2k_degradation" # Name of the experiment
-PHASE: "gan" # psnr, gan
-UPSCALE_FACTOR: 4
+EXP_NAME: "edsrnet_x3-df2k" # Name of the experiment
+PHASE: "psnr" # psnr, gan
+UPSCALE_FACTOR: 3
 
 DEGRADATION_MODEL_PARAMETERS_DICT:
   SINC_KERNEL_SIZE: 21
   GAUSSIAN_KERNEL_RANGE: [ 7, 9, 11, 13, 15, 17, 19, 21 ]
-  GAUSSIAN_KERNEL_TYPE: [ "ISOTROPIC", "ANISOTROPIC","GENERALIZED_ISOTROPIC", "GENERALIZED_ANISOTROPIC","PLATEAU_ISOTROPIC", "PLATEAU_ANISOTROPIC" ]
+  GAUSSIAN_KERNEL_TYPE: [ "isotropic", "anisotropic","generalized_isotropic", "generalized_anisotropic","plateau_isotropic", "plateau_anisotropic" ]
   # first-order degradation parameters
   GAUSSIAN_KERNEL_PROBABILITY1: [ 0.45, 0.25, 0.12, 0.03, 0.12, 0.03 ]
   SINC_KERNEL_PROBABILITY1: 0.1
@@ -44,36 +44,31 @@ DEGRADATION_PROCESS_PARAMETERS_DICT:
   JPEG_RANGE2: [ 30, 95 ]
 
 DATASET:
-  TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_multiscale_sub_image_384x384"  # 178574 images
+  TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_multiscale_sub_image_384x384"  # 178,574 images
   TRAIN_LR_IMAGES_DIR: ""
 
-  VAL_GT_IMAGES_DIR: "datasets/Set5/X4/GT"
-  VAL_LR_IMAGES_DIR: "datasets/Set5/X4/LR"
+  VAL_GT_IMAGES_DIR: "datasets/Set5/X3/GT"
+  VAL_LR_IMAGES_DIR: "datasets/Set5/X3/LR"
 
 MODEL:
   G:
-    TYPE: "rfdnet_x4"
+    TYPE: "edsrnet_x3"
     IN_CHANNELS: 3
     OUT_CHANNELS: 3
-    CHANNELS: 50
-  D:
-    TYPE: "discriminator_for_unet"
-    IN_CHANNELS: 3
-    OUT_CHANNELS: 1
     CHANNELS: 64
-    UPSAMPLE_METHOD: "bilinear"
+    NUM_RCB: 16
+    IMAGE_RANGE: 255.
+    MEAN: [ 0.4488, 0.4371, 0.4040 ]
 
 TRAIN:
   RESUME_G: ""
-  RESUME_D: ""
 
   # train weights
-  G_WEIGHTS_PATH: "results/train/rfdnet_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
-  D_WEIGHTS_PATH: ""
+  G_WEIGHTS_PATH: ""
 
   # train datasets
-  IMAGE_SIZE: 192
-  BATCH_SIZE: 64  # 178,574 / 64 ~= 2,790 iters / epoch
+  IMAGE_SIZE: 144
+  BATCH_SIZE: 16  # 178574 / 16 ~= 11160 iters / epoch
   NUM_WORKERS: 4
 
   # train solver
@@ -87,39 +82,16 @@ TRAIN:
       LR_SCHEDULER:
         TYPE: "constant"
         FACTOR: 1.0
-        TOTAL_ITERS: 143
-    D:
-      OPTIM:
-        TYPE: "adam"
-        LR: 0.0001
-        BETAS: [ 0.9, 0.999 ]
-
-      LR_SCHEDULER:
-        TYPE: "constant"
-        FACTOR: 1.0
-        TOTAL_ITERS: 143
+        TOTAL_ITERS: 180
 
   # loss config
   LOSS:
     PIXEL:
       TYPE: "l1_loss"
       WEIGHT: 1.0
-    FEATURE:
-      TYPE: "feature_loss"
-      ARCH_NAME: "vgg19"
-      LAYER_WEIGHT_DICT:
-        "conv1_2": 0.1
-        "conv2_2": 0.1
-        "conv3_4": 1.0
-        "conv4_4": 1.0
-        "conv5_4": 1.0
-      NORMALIZE: True
-    ADV:
-      TYPE: "bce_with_logits_loss"
-      WEIGHT: 0.1
 
   # train hyper-parameters
-  EPOCHS: 143  # 143 * 2,790 = 401,760 ~= 400,000 iters
+  EPOCHS: 90  # 90 * 11160 = 1,004,400 ~= 1,000,000 iters
 
   # train setup
   LOCAL_RANK: -1
@@ -132,6 +104,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/rfdgan_x4-df2k_degradation/weights/g_best_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/edsrnet_x3-df2k/weights/g_last_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True

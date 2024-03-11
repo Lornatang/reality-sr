@@ -1,5 +1,5 @@
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "edsrgan_x4-df2k_degradation" # Name of the experiment
+EXP_NAME: "edsrgan_x4-df2k" # Name of the experiment
 PHASE: "gan" # psnr, gan
 UPSCALE_FACTOR: 4
 
@@ -57,6 +57,8 @@ MODEL:
     OUT_CHANNELS: 3
     CHANNELS: 64
     NUM_RCB: 16
+    IMAGE_RANGE: 255.
+    MEAN: [ 0.4488, 0.4371, 0.4040 ]
   D:
     TYPE: "discriminator_for_unet"
     IN_CHANNELS: 3
@@ -69,7 +71,7 @@ TRAIN:
   RESUME_D: ""
 
   # train weights
-  G_WEIGHTS_PATH: "results/train/edsrnet_x4-df2k_degradation/weights/g_last_checkpoint.pkl"
+  G_WEIGHTS_PATH: "results/train/edsrnet_x4-df2k/weights/g_last_checkpoint.pkl"
   D_WEIGHTS_PATH: ""
 
   # train datasets
@@ -133,6 +135,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/edsrgan_x4-df2k_degradation/weights/g_best_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/edsrgan_x4-df2k/weights/g_best_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True

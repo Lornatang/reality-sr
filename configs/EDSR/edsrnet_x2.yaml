@@ -1,5 +1,5 @@
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "realesrnet_x2-df2k_degradation" # Name of the experiment
+EXP_NAME: "edsrnet_x2-df2k" # Name of the experiment
 PHASE: "psnr" # psnr, gan
 UPSCALE_FACTOR: 2
 
@@ -44,7 +44,7 @@ DEGRADATION_PROCESS_PARAMETERS_DICT:
   JPEG_RANGE2: [ 30, 95 ]
 
 DATASET:
-  TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_multiscale_sub_image_384x384"  # 178574 images
+  TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_multiscale_sub_image_384x384"  # 178,574 images
   TRAIN_LR_IMAGES_DIR: ""
 
   VAL_GT_IMAGES_DIR: "datasets/Set5/X2/GT"
@@ -52,12 +52,13 @@ DATASET:
 
 MODEL:
   G:
-    TYPE: "rrdbnet_x2"
+    TYPE: "edsrnet_x2"
     IN_CHANNELS: 3
     OUT_CHANNELS: 3
     CHANNELS: 64
-    GROWTH_CHANNELS: 32
-    NUM_RRDB: 23
+    NUM_RCB: 16
+    IMAGE_RANGE: 255.
+    MEAN: [ 0.4488, 0.4371, 0.4040 ]
 
 TRAIN:
   RESUME_G: ""
@@ -75,13 +76,13 @@ TRAIN:
     G:
       OPTIM:
         TYPE: "adam"
-        LR: 0.0002
-        BETAS: [ 0.9, 0.99 ]
+        LR: 0.0001
+        BETAS: [ 0.9, 0.999 ]
 
       LR_SCHEDULER:
         TYPE: "constant"
         FACTOR: 1.0
-        TOTAL_ITERS: 90
+        TOTAL_ITERS: 180
 
   # loss config
   LOSS:
@@ -103,6 +104,6 @@ TRAIN:
   VERBOSE: True
 
 EVAL:
-  WEIGHTS_PATH: "results/train/realesrnet_x2-df2k_degradation/weights/g_last_checkpoint.pkl"
+  WEIGHTS_PATH: "results/train/edsrnet_x2-df2k/weights/g_last_checkpoint.pkl"
   NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
   ONLY_TEST_Y_CHANNEL: True

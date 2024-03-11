@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+from .carnet import *
 from .discriminator_for_unet import *
 from .edsrnet import *
 from .losses import *
