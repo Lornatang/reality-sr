@@ -259,33 +259,64 @@ class Trainer:
 
     def get_g_model(self):
         model_g_type = self.model_config_dict.G.TYPE
-        if model_g_type == "edsrnet_x2":
+        if model_g_type == "carnet_x2":
+            g_model = carnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                channels=self.model_config_dict.G.get("CHANNELS", 64),
+                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
+        elif model_g_type == "carnet_x3":
+            g_model = carnet_x3(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                channels=self.model_config_dict.G.get("CHANNELS", 64),
+                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
+        elif model_g_type == "carnet_x4":
+            g_model = carnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
+                                out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
+                                channels=self.model_config_dict.G.get("CHANNELS", 64),
+                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
+        elif model_g_type == "edsrnet_x2":
             g_model = edsrnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                  channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16),
+                                 image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                 mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
+
         elif model_g_type == "edsrnet_x3":
             g_model = edsrnet_x3(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                  channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16),
+                                 image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                 mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
         elif model_g_type == "edsrnet_x4":
             g_model = edsrnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
                                  channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16))
+                                 num_rcb=self.model_config_dict.G.get("NUM_RCB", 16),
+                                 image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                 mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
         elif model_g_type == "rfdnet_x2":
             g_model = rfdnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                channels=self.model_config_dict.G.get("CHANNELS", 50))
+                                channels=self.model_config_dict.G.get("CHANNELS", 50),
+                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
         elif model_g_type == "rfdnet_x3":
             g_model = rfdnet_x3(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                channels=self.model_config_dict.G.get("CHANNELS", 50))
+                                channels=self.model_config_dict.G.get("CHANNELS", 50),
+                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
         elif model_g_type == "rfdnet_x4":
             g_model = rfdnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                channels=self.model_config_dict.G.get("CHANNELS", 50))
+                                channels=self.model_config_dict.G.get("CHANNELS", 50),
+                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
+                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
         elif model_g_type == "rrdbnet_x2":
             g_model = rrdbnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
