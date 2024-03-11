@@ -55,7 +55,7 @@ MODEL:
     TYPE: "carnet_x4"
     IN_CHANNELS: 3
     OUT_CHANNELS: 3
-    CHANNELS: 50
+    CHANNELS: 64
     IMAGE_RANGE: 255.
     MEAN: [ 0.4488, 0.4371, 0.4040 ]
 
