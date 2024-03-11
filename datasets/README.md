@@ -8,9 +8,9 @@ Please put the datasets in the following folder structure.
         - 001.png
         - 002.png
         ...
-    - DF2K_sub_image_384x384
-        - 001-0000_0000.png
-        - 002-0000_0000.png
+    - DF2K_multiscale_sub_image_384x384
+        - 001142-scale4_s004.png
+        - 001142-scale4_s003.png
         ...
 
 # Test dataset struct
@@ -24,4 +24,6 @@ Please put the datasets in the following folder structure.
             - baby.png
             - bird.png
             - ...
+    - X2
+    - X3
 ```
