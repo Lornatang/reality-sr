@@ -15,7 +15,7 @@ import argparse
 
 from omegaconf import OmegaConf
 
-from real_esrgan.apis import LargeImageSuperResolutionInferencer
+from reality_sr.apis import LargeImageSuperResolutionInferencer
 
 
 def get_opts() -> argparse.Namespace:
