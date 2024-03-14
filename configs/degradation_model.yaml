@@ -1,8 +1,3 @@
-DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
-EXP_NAME: "edsrnet_x3-df2k" # Name of the experiment
-PHASE: "psnr" # psnr, gan
-UPSCALE_FACTOR: 3
-
 DEGRADATION_MODEL_PARAMETERS_DICT:
   SINC_KERNEL_SIZE: 21
   GAUSSIAN_KERNEL_RANGE: [ 7, 9, 11, 13, 15, 17, 19, 21 ]
@@ -42,68 +37,3 @@ DEGRADATION_PROCESS_PARAMETERS_DICT:
   NOISE_RANGE2: [ 1, 25 ]
   POISSON_SCALE_RANGE2: [ 0.05, 2.5 ]
   JPEG_RANGE2: [ 30, 95 ]
-
-DATASET:
-  TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_multiscale_sub_image_384x384"  # 178,574 images
-  TRAIN_LR_IMAGES_DIR: ""
-
-  VAL_GT_IMAGES_DIR: "datasets/Set5/X3/GT"
-  VAL_LR_IMAGES_DIR: "datasets/Set5/X3/LR"
-
-MODEL:
-  G:
-    TYPE: "edsrnet_x3"
-    IN_CHANNELS: 3
-    OUT_CHANNELS: 3
-    CHANNELS: 64
-    NUM_RCB: 16
-    IMAGE_RANGE: 255.
-    MEAN: [ 0.4488, 0.4371, 0.4040 ]
-
-TRAIN:
-  RESUME_G: ""
-
-  # train weights
-  G_WEIGHTS_PATH: ""
-
-  # train datasets
-  IMAGE_SIZE: 144
-  BATCH_SIZE: 16  # 178574 / 16 ~= 11160 iters / epoch
-  NUM_WORKERS: 4
-
-  # train solver
-  SOLVER:
-    G:
-      OPTIM:
-        TYPE: "adam"
-        LR: 0.0001
-        BETAS: [ 0.9, 0.999 ]
-
-      LR_SCHEDULER:
-        TYPE: "constant"
-        FACTOR: 1.0
-        TOTAL_ITERS: 180
-
-  # loss config
-  LOSS:
-    PIXEL:
-      TYPE: "l1_loss"
-      WEIGHT: 1.0
-
-  # train hyper-parameters
-  EPOCHS: 90  # 90 * 11160 = 1,004,400 ~= 1,000,000 iters
-
-  # train setup
-  LOCAL_RANK: -1
-  RANK: -1
-  WORLD_SIZE: 1
-  DIST_URL: "env://"
-
-  # train results
-  OUTPUT_DIR: "results/train"
-  VERBOSE: True
-
-EVAL:
-  WEIGHTS_PATH: "results/train/edsrnet_x3-df2k/weights/g_last_checkpoint.pkl"
-  NIQE_WEIGHTS_PATH: "results/pretrained_models/niqe_model.mat"
-  ONLY_TEST_Y_CHANNEL: True

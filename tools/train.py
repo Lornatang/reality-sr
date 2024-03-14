@@ -12,6 +12,7 @@
 # limitations under the License.
 # ==============================================================================
 import argparse
+from pathlib import Path
 
 from omegaconf import OmegaConf
 
@@ -33,6 +34,12 @@ def main() -> None:
     config_path = opts.config_path
 
     config_dict = OmegaConf.load(config_path)
+    # merge _BASE_ config
+    base_config_path = config_dict.get("_BASE_", False)
+    if base_config_path:
+        base_config_dict = OmegaConf.load(Path(config_path).absolute().parent / Path(base_config_path))
+        config_dict = OmegaConf.merge(base_config_dict, config_dict)
+
     config_dict, device = init_train_env(config_dict)
 
     trainer = Trainer(config_dict, device)
