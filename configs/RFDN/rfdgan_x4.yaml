@@ -3,6 +3,7 @@ _BASE_: "../degradation_model.yaml"
 DEVICE: "0" # "0" means GPU 0, "0,1" means GPU 0 and 1, etc.
 EXP_NAME: "rfdgan_x4-df2k" # Name of the experiment
 PHASE: "gan" # psnr, gan
+UPSCALE_FACTOR: 4
 
 DATASET:
   TRAIN_GT_IMAGES_DIR: "datasets/DF2K/DF2K_multiscale_sub_image_384x384"  # 178574 images
