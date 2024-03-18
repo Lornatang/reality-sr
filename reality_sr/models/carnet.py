@@ -69,9 +69,9 @@ class CARNet(nn.Module):
         up_sampling = []
         if (upscale_factor & (upscale_factor - 1)) == 0:  # 2,4,8
             for _ in range(int(math.log(upscale_factor, 2))):
-                up_sampling.append(PixShuffleUpsampleBlock(64, 2))
+                up_sampling.append(PixShuffleUpsampleBlock(channels, 2))
         else:  # 3
-            up_sampling.append(PixShuffleUpsampleBlock(64, 3))
+            up_sampling.append(PixShuffleUpsampleBlock(channels, 3))
         self.up_sampling = nn.Sequential(*up_sampling)
         
         # Final output layer
