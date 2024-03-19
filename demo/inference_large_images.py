@@ -15,7 +15,7 @@ import argparse
 
 from omegaconf import OmegaConf
 
-from reality_sr.apis import LargeImageSuperResolutionInferencer
+from reality_sr.apis import LargeImagesSuperResolutionInferencer
 
 
 def get_opts() -> argparse.Namespace:
@@ -34,7 +34,7 @@ def main() -> None:
 
     config_dict = OmegaConf.load(config_path)
 
-    inferencer = LargeImageSuperResolutionInferencer(config_dict)
+    inferencer = LargeImagesSuperResolutionInferencer(config_dict)
     inferencer.warmup()
     inferencer.inference()
 

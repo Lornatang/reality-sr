@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "reality_sr"
-version = "0.1.0"
+version = "0.2.0"
 description = "Real world super resolution library."
 readme = "README.md"
 requires-python = ">= 3.10"

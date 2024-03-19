@@ -22,11 +22,11 @@ from reality_sr.utils.ops import get_all_filenames, get_window_position
 from .super_resolution import SuperResolutionInferencer
 
 __all__ = [
-    "LargeImageSuperResolutionInferencer",
+    "LargeImagesSuperResolutionInferencer",
 ]
 
 
-class LargeImageSuperResolutionInferencer(SuperResolutionInferencer):
+class LargeImagesSuperResolutionInferencer(SuperResolutionInferencer):
     def __init__(self, config_dict: DictConfig) -> None:
         super().__init__(config_dict)
         self.upscale_factor = config_dict.UPSCALE_FACTOR
