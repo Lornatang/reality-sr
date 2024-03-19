@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 from typing import Any, Union
 
+from natsort import natsorted
 from torch import Tensor, nn
 from torchvision.datasets.folder import IMG_EXTENSIONS
 
@@ -69,7 +70,7 @@ def get_all_filenames(path: str | Path, image_extensions: tuple = None) -> list:
 
     # Only get file names with specified extensions
     file_paths = path.iterdir()
-    file_names = [p.name for p in file_paths if p.suffix in image_extensions]
+    file_names = natsorted([p.name for p in file_paths if p.suffix in image_extensions])
 
     return file_names
 
