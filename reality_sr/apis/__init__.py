@@ -11,6 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-from .large_images_super_resolution import LargeImagesSuperResolutionInferencer
-from .super_resolution import SuperResolutionInferencer
-from .video_super_resolution import VideoSuperResolutionInferencer
+from .large_images_super_resolution import *
+from .super_resolution import *
+from .video_super_resolution import *

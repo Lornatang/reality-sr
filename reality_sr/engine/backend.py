@@ -12,6 +12,7 @@
 # limitations under the License.
 # ==============================================================================
 from pathlib import Path
+from typing import Union
 
 import torch
 from torch import nn, Tensor
@@ -24,11 +25,10 @@ __all__ = [
 
 
 class SuperResolutionBackend(nn.Module):
-    def __init__(self, weights_path: str | Path, device: torch.device = None):
-        super().__init__()
-        assert isinstance(weights_path, str) and Path(weights_path).suffix == ".pkl", f"{Path(weights_path).suffix} format is not supported."
+    def __init__(self, weights_path: Union[str, Path], device: torch.device = None):
+        super(SuperResolutionBackend, self).__init__()
         model = load_checkpoint(weights_path, map_location=device)
-        self.__dict__.update(locals())  # assign all variables to self
+        self.__dict__.update(locals())
 
     def forward(self, x: Tensor) -> Tensor:
         return self.model(x)
