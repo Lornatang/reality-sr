@@ -38,13 +38,11 @@ class SuperResolutionInference(ABC):
         model_info = get_model_info(self.model.model, device=self.device)
         LOGGER.info(f"Model summary: {model_info}")
 
-        # disable gradients
+        # disable gradients calculation
         torch.set_grad_enabled(False)
 
         # warmup
-        tensor = torch.randn([1, 3, 64, 64], device=self.device)
-        _ = self.model(tensor)
-        del tensor
+        self.model(torch.zeros(1, 3, 64, 64, device=self.device).type_as(next(self.model.parameters())))
 
     def __call__(self, inputs: Union[str, list[str]], batch_size: int, save_dir: Union[str, Path]) -> None:
         if isinstance(inputs, str):
