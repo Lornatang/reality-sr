@@ -27,11 +27,11 @@ from reality_sr.utils.imgproc import tensor_to_image
 from reality_sr.utils.torch_utils import get_model_info
 
 __all__ = [
-    "SuperResolutionInferencer",
+    "SuperResolutionInference",
 ]
 
 
-class SuperResolutionInferencer(ABC):
+class SuperResolutionInference(ABC):
     def __init__(self, weights_path: Union[str, Path], device: str) -> None:
         self.device = select_device(device)
         self.model = SuperResolutionBackend(weights_path, self.device)
@@ -46,7 +46,7 @@ class SuperResolutionInferencer(ABC):
         _ = self.model(tensor)
         del tensor
 
-    def __call__(self, inputs: Union[str, list[str]], batch_size: int, save_dir: Union[str, Path]):
+    def __call__(self, inputs: Union[str, list[str]], batch_size: int, save_dir: Union[str, Path]) -> None:
         if isinstance(inputs, str):
             inputs = [inputs]
         num_inputs = len(inputs)
