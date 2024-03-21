@@ -26,13 +26,13 @@ __all__ = [
 ]
 
 
-def image_to_tensor(image: np.ndarray, range_norm: bool, half: bool) -> Tensor:
+def image_to_tensor(image: np.ndarray, range_norm: bool = False, half: bool = False) -> Tensor:
     """Convert the image data type to the Tensor (NCWH) data type supported by PyTorch
 
     Args:
         image (np.ndarray): The image data read by ``OpenCV.imread``, the data range is [0,255] or [0, 1]
-        range_norm (bool): Scale [0, 1] data to between [-1, 1]
-        half (bool): Whether to convert torch.float32 similarly to torch.half type
+        range_norm (bool, optional): Scale [0, 1] data to between [-1, 1]. Defaults to False.
+        half (bool, optional): Whether to convert torch.float32 similarly to torch.half type. Defaults to False.
 
     Returns:
         tensor (Tensor): Data types supported by PyTorch
@@ -56,20 +56,20 @@ def image_to_tensor(image: np.ndarray, range_norm: bool, half: bool) -> Tensor:
     return tensor
 
 
-def tensor_to_image(tensor: Tensor, range_norm: bool, half: bool) -> Any:
-    """Convert the Tensor(NCWH) data type supported by PyTorch to the np.ndarray(WHC) image data type
+def tensor_to_image(tensor: Tensor, range_norm: bool = False, half: bool = False) -> Any:
+    r"""Convert the Tensor(NCWH) data type supported by PyTorch to the np.ndarray(WHC) image data type
 
     Args:
         tensor (Tensor): Data types supported by PyTorch (NCHW), the data range is [0, 1]
-        range_norm (bool): Scale [-1, 1] data to between [0, 1]
-        half (bool): Whether to convert torch.float32 similarly to torch.half type.
+        range_norm (bool, optional): Scale [-1, 1] data to between [0, 1]. Defaults to False.
+        half (bool, optional): Whether to convert torch.float32 similarly to torch.half type. Defaults to False.
 
     Returns:
         image (np.ndarray): Data types supported by PIL or OpenCV
 
     Examples:
         >>> example_tensor = torch.randn([1,3, 256, 256], dtype=torch.float)
-        >>> example_image = tensor_to_image(example_tensor, False, False)
+        >>> example_image = tensor_to_image(example_tensor)
 
     """
     # Scale the image data from [-1, 1] to [0, 1]

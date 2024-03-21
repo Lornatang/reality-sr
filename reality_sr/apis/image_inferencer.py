@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-from abc import ABC
 from pathlib import Path
 from typing import Union
 
@@ -27,22 +26,23 @@ from reality_sr.utils.imgproc import tensor_to_image
 from reality_sr.utils.torch_utils import get_model_info
 
 __all__ = [
-    "SuperResolutionInference",
+    "SuperResolutionImageInferencer",
 ]
 
 
-class SuperResolutionInference(ABC):
-    def __init__(self, weights_path: Union[str, Path], device: str) -> None:
+class SuperResolutionImageInferencer:
+    def __init__(self, weights_path: Union[str, Path], device: str = "cuda", verbose: bool = False) -> None:
         self.device = select_device(device)
         self.model = SuperResolutionBackend(weights_path, self.device)
-        model_info = get_model_info(self.model.model, device=self.device)
-        LOGGER.info(f"Model summary: {model_info}")
-
         # disable gradients calculation
         torch.set_grad_enabled(False)
 
         # warmup
         self.model(torch.zeros(1, 3, 64, 64, device=self.device).type_as(next(self.model.parameters())))
+
+        if verbose:
+            model_info = get_model_info(self.model.model, device=self.device)
+            LOGGER.info(f"Model summary: {model_info}")
 
     def __call__(self, inputs: Union[str, list[str]], batch_size: int, save_dir: Union[str, Path]) -> None:
         if isinstance(inputs, str):
@@ -81,7 +81,7 @@ class SuperResolutionInference(ABC):
         for image_path in image_path_list:
             image = self._load_image(image_path)
             tensor.append(image)
-        tensor = torch.stack(tensor, dim=0)
+        tensor = torch.stack(tensor, 0)
         return tensor.to(device=self.device)
 
     def inferences(self, tensor: Tensor) -> Tensor:
@@ -91,7 +91,7 @@ class SuperResolutionInference(ABC):
     def post_process(predictions: Tensor, image_path_list: list[str], save_dir: Path) -> None:
         for i, (prediction, image_path) in enumerate(zip(predictions, image_path_list)):
             save_image_path = str((Path(save_dir).absolute().resolve() / Path(image_path).name))
-            save_image = tensor_to_image(prediction, False, False)
+            save_image = tensor_to_image(prediction)
             save_image = cv2.cvtColor(save_image, cv2.COLOR_RGB2BGR)
             LOGGER.info(f"SR image save to '{save_image_path}'")
             cv2.imwrite(save_image_path, save_image)
