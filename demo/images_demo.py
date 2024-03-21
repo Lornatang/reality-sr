@@ -33,7 +33,7 @@ def get_opts() -> argparse.Namespace:
         help="Whether to run inference on CPU or GPU. Defaults to '0'",
     )
     parser.add_argument(
-        "--inputs-dir",
+        "--inputs",
         type=Path,
         default="demo/data",
         help="Directory to save output images, defaults to 'demo/data'",
@@ -45,7 +45,7 @@ def get_opts() -> argparse.Namespace:
         help="How many images to process at once. Defaults to 2",
     )
     parser.add_argument(
-        "--save-dir",
+        "--output",
         type=Path,
         default="demo/output",
         help="Directory to save output images. Defaults to 'demo/output'",
@@ -58,9 +58,9 @@ def main() -> None:
 
     inferencer = SuperResolutionImageInferencer(opts.weights_path, opts.device)
 
-    image_name_list = get_all_filenames(opts.inputs_dir)
-    image_path_list = [str(Path(opts.inputs_dir).absolute().resolve() / image_name) for image_name in image_name_list]
-    inferencer(image_path_list, opts.batch_size, opts.save_dir)
+    image_name_list = get_all_filenames(opts.inputs)
+    image_path_list = [str(Path(opts.inputs).absolute().resolve() / image_name) for image_name in image_name_list]
+    inferencer(image_path_list, opts.batch_size, opts.output)
 
 
 if __name__ == "__main__":
