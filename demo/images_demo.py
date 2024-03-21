@@ -14,7 +14,7 @@
 import argparse
 from pathlib import Path
 
-from reality_sr.apis.image_inferencer import SuperResolutionImageInferencer
+from reality_sr.apis.image_inferencer import ImageSuperResolutionInferencer
 from reality_sr.utils.ops import get_all_filenames
 
 
@@ -56,7 +56,7 @@ def get_opts() -> argparse.Namespace:
 def main() -> None:
     opts = get_opts()
 
-    inferencer = SuperResolutionImageInferencer(opts.weights_path, opts.device)
+    inferencer = ImageSuperResolutionInferencer(opts.weights_path, opts.device)
 
     image_name_list = get_all_filenames(opts.inputs)
     image_path_list = [str(Path(opts.inputs).absolute().resolve() / image_name) for image_name in image_name_list]

@@ -26,11 +26,11 @@ from reality_sr.utils.imgproc import tensor_to_image
 from reality_sr.utils.torch_utils import get_model_info
 
 __all__ = [
-    "SuperResolutionImageInferencer",
+    "ImageSuperResolutionInferencer",
 ]
 
 
-class SuperResolutionImageInferencer:
+class ImageSuperResolutionInferencer:
     def __init__(self, weights_path: Union[str, Path], device: str = "cuda", verbose: bool = False) -> None:
         self.device = select_device(device)
         self.model = SuperResolutionBackend(weights_path, self.device)
