@@ -19,7 +19,7 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from reality_sr.engine.backend import SuperResolutionBackend
+from reality_sr.utils.checkpoint import load_checkpoint
 from reality_sr.utils.envs import select_device
 from reality_sr.utils.events import LOGGER
 from reality_sr.utils.imgproc import tensor_to_image
@@ -33,7 +33,7 @@ __all__ = [
 class ImageSuperResolutionInferencer:
     def __init__(self, weights_path: Union[str, Path], device: str = "cuda", verbose: bool = False) -> None:
         self.device = select_device(device)
-        self.model = SuperResolutionBackend(weights_path, self.device)
+        self.model = load_checkpoint(weights_path, map_location=self.device)
         # disable gradients calculation
         torch.set_grad_enabled(False)
 
