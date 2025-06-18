@@ -262,21 +262,15 @@ class Trainer:
         if model_g_type == "carnet_x2":
             g_model = carnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
-                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
+                                channels=self.model_config_dict.G.get("CHANNELS", 64))
         elif model_g_type == "carnet_x3":
             g_model = carnet_x3(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
-                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
+                                channels=self.model_config_dict.G.get("CHANNELS", 64))
         elif model_g_type == "carnet_x4":
             g_model = carnet_x4(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                 out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),
-                                channels=self.model_config_dict.G.get("CHANNELS", 64),
-                                image_range=self.model_config_dict.G.get("IMAGE_RANGE", 255.),
-                                mean=OmegaConf.to_container(self.model_config_dict.G.get("MEAN", None)))
+                                channels=self.model_config_dict.G.get("CHANNELS", 64))
         elif model_g_type == "edsrnet_x2":
             g_model = edsrnet_x2(in_channels=self.model_config_dict.G.get("IN_CHANNELS", 3),
                                  out_channels=self.model_config_dict.G.get("OUT_CHANNELS", 3),

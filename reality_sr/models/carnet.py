@@ -32,22 +32,14 @@ class CARNet(nn.Module):
             out_channels: int = 3,
             channels: int = 50,
             upscale_factor: int = 4,
-            image_range: float = 255.,
-            mean: Tensor = None,
     ) -> None:
         super(CARNet, self).__init__()
         assert upscale_factor in (2, 3, 4), "Upscale factor should be 2, 3 or 4."
-
         self.upscale_factor = upscale_factor
-        if mean is not None:
-            self.mean = torch.tensor(mean).view(1, 3, 1, 1)
-        else:
-            self.mean = torch.tensor([0.4488, 0.4371, 0.4040]).view(1, 3, 1, 1)
-        self.image_range = image_range
 
         # Shallow feature extractor
         self.conv_1 = nn.Conv2d(in_channels, channels, 3, stride=1, padding=1)
-        
+
         # Cascading feature extractor
         self.cb_1 = CascadingBlock(channels)
         self.conv_2 = nn.Sequential(
@@ -73,34 +65,28 @@ class CARNet(nn.Module):
         else:  # 3
             up_sampling.append(PixShuffleUpsampleBlock(channels, 3))
         self.up_sampling = nn.Sequential(*up_sampling)
-        
+
         # Final output layer
         self.conv_5 = nn.Conv2d(channels, out_channels, (3, 3), 1, 1)
 
         initialize_weights(self.modules())
 
     def forward(self, x: Tensor) -> Tensor:
-        self.mean = self.mean.type_as(x)
-        self.mean = self.mean.to(x.device)
-
-        x = x.sub_(self.mean).mul_(self.image_range)
-
         out = self.conv_1(x)
 
         cb_1 = self.cb_1(out)
-        concat_1 = torch.cat([cb_1, out], 1)
+        concat_1 = torch.cat([cb_1, out], dim=1)
         conv_2 = self.conv_2(concat_1)
         cb_2 = self.cb_2(conv_2)
-        concat_2 = torch.cat([concat_1, cb_2], 1)
+        concat_2 = torch.cat([concat_1, cb_2], dim=1)
         conv_3 = self.conv_3(concat_2)
         cb_3 = self.cb_3(conv_3)
-        concat_3 = torch.cat([concat_2, cb_3], 1)
+        concat_3 = torch.cat([concat_2, cb_3], dim=1)
         conv_4 = self.conv_4(concat_3)
 
         out = self.up_sampling(conv_4)
         out = self.conv_5(out)
 
-        out = out.div_(self.image_range).add_(self.mean)
         return torch.clamp_(out, 0.0, 1.0)
 
 
