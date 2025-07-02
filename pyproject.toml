@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit-core >= 3.8"]
+requires = ["flit-core >= 3.8", "ninja"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -13,26 +13,31 @@ authors = [
     { name = "Lornatang", email = "liuchangyu1111@gmail.com" },
 ]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Copyright (c) Lornatang. All rights reserved.",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: POSIX :: Linux",
 ]
 urls.homepage = "https://github.com/pypa/build"
 urls.changelog = "https://pypa-build.readthedocs.io/en/stable/changelog.html"
 
 dependencies = [
-    "opencv-python",
-    "numpy",
-    "typing",
-    "tqdm",
-    "scipy",
-    "natsort",
     "fvcore",
+    "natsort",
+    "numpy>=2.0.0",
     "omegaconf",
+    "opencv-python>=4.11.0.86",
+    "scipy",
+    "torch>=2.5.1",
+    "torchvision>=0.20.1",
+    "tqdm",
 ]
 
 [project.scripts]
