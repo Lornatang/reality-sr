@@ -1,27 +1,57 @@
-.idea
-.vscode
-__pycache__
+# compilation and distribution
+__pycache__/
+_ext/
+*.pyc
+*.pyd
+*.so
+*.dll
+*.egg-info/
+build/
+dist/
+wheels/
 
-*.jpg
-*.jpeg
-*.png
-*.avi
-*.mp4
-*.bmp
+# ipython/jupyter notebooks
+*.ipynb
+**/.ipynb_checkpoints/
 
-*.pt
+# editor temporaries
+*.swn
+*.swo
+*.swp
+*~
+
+# editor settings
+.idea/
+.vscode/
+_darcs/
+
+# pytorch/python/numpy formats
 *.pth
-*.onnx
 *.pkl
-*.engine
+*.npy
+*.pt
 
-test.py
+# image formats
+*.jpg
+*.JPG
+*.jpeg
+*.JPEG
+*.png
+*.PNG
+*.gif
+*.GIF
+*.bmp
+*.BMP
+*.tif
+*.TIF
+*.tiff
+*.TIFF
+*.webp
+*.WEBP
 
-datasets/DF2K
-datasets/Set5
-datasets/custom
-
-demo/data
-demo/output
-
-results
+# project dirs
+*.sh
+*.yaml
+datasets/
+results/
+tools/
