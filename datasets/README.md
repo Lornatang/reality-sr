@@ -11,16 +11,16 @@ Please put the datasets in the following folder structure.
     ...
 
 # Test dataset struct
-- Set5
-    - X4
-        - GT
+- set5
+    - x4
+        - gt
             - baby.png
             - bird.png
             - ...
-        - LR
+        - lr
             - baby.png
             - bird.png
             - ...
-    - X2
-    - X3
+    - x2
+    - x3
 ```
