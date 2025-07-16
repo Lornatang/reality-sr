@@ -14,7 +14,7 @@
 import json
 from collections import OrderedDict, namedtuple
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
 import numpy as np
 import tensorrt as trt
@@ -67,7 +67,7 @@ class TRTInferencer(nn.Module):
 
         self.binding_address = OrderedDict((n, data.ptr) for n, data in self.bindings.items())
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> Union[torch.Tensor, List[torch.Tensor]]:
         if x.shape != self.bindings["input0"].shape:
             self.context.set_input_shape("input0", x.shape)
             self.bindings["input0"] = self.bindings["input0"]._replace(shape=x.shape)
@@ -81,3 +81,4 @@ class TRTInferencer(nn.Module):
             return self.bindings[self.output_names[0]].data
         else:
             return [self.bindings[x].data for x in sorted(self.output_names)]
+
