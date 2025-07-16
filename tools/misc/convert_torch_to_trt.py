@@ -83,18 +83,15 @@ def convert_torch_to_trt(torch_path: Union[Path, str], trt_path: Union[Path, str
         input_names=["input0"],
         output_names=["output0"],
         dynamic_axes={
-            "input0": {2: "height", 3: "width"},
-            "output0": {
-                2: f"height*{upsale_factor}",
-                3: f"width*{upsale_factor}"
-            }
+            "input0": {0: "batch_size", 2: "height", 3: "width"},
+            "output0": {0: "batch_size", 2: f"height*{upsale_factor}", 3: f"width*{upsale_factor}"}
         }
     )
 
     # Export to TensorRT.
-    LOGGER.info(f"Building TensorRT engine to {trt_path}...")
     if trt_path is None:
         trt_path = Path(torch_path).with_suffix(".engine")
+    LOGGER.info(f"Building TensorRT engine to {trt_path}...")
 
     # Builder configuration.
     logger = trt.Logger(trt.Logger.INFO)
@@ -118,12 +115,20 @@ def convert_torch_to_trt(torch_path: Union[Path, str], trt_path: Union[Path, str
                 LOGGER.error(f"{error}: {parser.get_error(error)}")
             raise RuntimeError("ONNX parsing failed")
 
+    # TensorRT inputs.
+    inputs = [network.get_input(i) for i in range(network.num_inputs)]
+    outputs = [network.get_output(i) for i in range(network.num_outputs)]
+    for inp in inputs:
+        LOGGER.info(f'input "{inp.name}" with shape{inp.shape} {inp.dtype}')
+    for out in outputs:
+        LOGGER.info(f'output "{out.name}" with shape{out.shape} {out.dtype}')
+
     if half:
         config.set_flag(trt.BuilderFlag.FP16)
 
     # Add optimization profile for dynamic shapes.
     profile = builder.create_optimization_profile()
-    profile.set_shape("input0", MIN_SHAPE, OPT_SHAPE, MAX_SHAPE)
+    profile.set_shape("input0", min=MIN_SHAPE, opt=OPT_SHAPE, max=MAX_SHAPE)
     config.add_optimization_profile(profile)
 
     serialized_engine = builder.build_serialized_network(network, config)
