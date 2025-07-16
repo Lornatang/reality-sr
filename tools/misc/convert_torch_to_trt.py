@@ -12,16 +12,13 @@
 # limitations under the License.
 # ==============================================================================
 import argparse
+import ast
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Tuple, Union
 
 import tensorrt as trt
 import torch
-
-MIN_SHAPE = (1, 3, 32, 32)
-OPT_SHAPE = (1, 3, 128, 128)
-MAX_SHAPE = (1, 3, 512, 512)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 LOGGER = logging.getLogger(__name__)
@@ -47,18 +44,53 @@ def get_opts() -> argparse.Namespace:
         help="Workspace size in GB for TensorRT. Defaults to 4"
     )
     parser.add_argument(
+        "--min-shape",
+        type=str,
+        default="(1, 3, 16, 16)",
+        help="Minimum input shape for dynamic axes (NCHW). Defaults to ``(1, 3, 16, 16)``."
+    )
+    parser.add_argument(
+        "--opt-shape",
+        type=str,
+        default="(4, 3, 128, 128)",
+        help="Optimal input shape for dynamic axes (NCHW). Defaults to ``(4, 3, 128, 128)``."
+    )
+    parser.add_argument(
+        "--max-shape",
+        type=str,
+        default="(4, 3, 512, 512)",
+        help="Maximum input shape for dynamic axes (NCHW). Defaults to (4, 3, 512, 512)``."
+    )
+    parser.add_argument(
         "--half",
         action="store_true",
         help="Enable FP16 precision for TensorRT."
     )
-    return parser.parse_args()
+    opts = parser.parse_args()
+
+    opts.min_shape = ast.literal_eval(opts.min_shape)
+    opts.opt_shape = ast.literal_eval(opts.opt_shape)
+    opts.max_shape = ast.literal_eval(opts.max_shape)
+    for shape in [opts.min_shape, opts.opt_shape, opts.max_shape]:
+        if not isinstance(shape, tuple) or len(shape) != 4:
+            raise ValueError(f"Invalid shape {shape}, must be 4-dimensional tuple (N, C, H, W)!")
+
+    return opts
 
 
 def get_opset_version() -> int:
     return max(int(k[14:]) for k in vars(torch.onnx) if "symbolic_opset" in k) - 1
 
 
-def convert_torch_to_trt(torch_path: Union[Path, str], trt_path: Union[Path, str] = None, workspace: int = 4, half: bool = False) -> None:
+def convert_torch_to_trt(
+        torch_path: Union[Path, str],
+        trt_path: Union[Path, str] = None,
+        workspace: int = 4,
+        min_shape: Tuple[int, int, int, int] = (1, 3, 16, 16),
+        opt_shape: Tuple[int, int, int, int] = (1, 3, 128, 128),
+        max_shape: Tuple[int, int, int, int] = (1, 3, 512, 512),
+        half: bool = False,
+) -> None:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if device.type != "cuda":
         raise RuntimeError("TensorRT requires a CUDA-enabled GPU.")
@@ -67,7 +99,7 @@ def convert_torch_to_trt(torch_path: Union[Path, str], trt_path: Union[Path, str
     # Export to ONNX.
     onnx_path = Path(torch_path).with_suffix(".onnx")
     LOGGER.info(f"Exporting ONNX model to {onnx_path}...")
-    input_tensor = torch.randn(OPT_SHAPE).cuda()
+    input_tensor = torch.randn(min_shape, device=device)
     if half:
         model.half()
         input_tensor = input_tensor.half()
@@ -128,7 +160,7 @@ def convert_torch_to_trt(torch_path: Union[Path, str], trt_path: Union[Path, str
 
     # Add optimization profile for dynamic shapes.
     profile = builder.create_optimization_profile()
-    profile.set_shape("input0", min=MIN_SHAPE, opt=OPT_SHAPE, max=MAX_SHAPE)
+    profile.set_shape("input0", min=min_shape, opt=opt_shape, max=max_shape)
     config.add_optimization_profile(profile)
 
     serialized_engine = builder.build_serialized_network(network, config)
@@ -143,7 +175,7 @@ def convert_torch_to_trt(torch_path: Union[Path, str], trt_path: Union[Path, str
 def main() -> None:
     opts = get_opts()
 
-    convert_torch_to_trt(opts.torch_path, opts.trt_path, opts.workspace, opts.half)
+    convert_torch_to_trt(opts.torch_path, opts.trt_path, opts.workspace, opts.min_shape, opts.opt_shape, opts.max_shape, opts.half)
 
 
 if __name__ == "__main__":
