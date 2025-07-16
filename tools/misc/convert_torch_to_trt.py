@@ -18,8 +18,6 @@ from typing import Union
 
 import tensorrt as trt
 import torch
-from alpha_dl.utils.checkpoint import load_checkpoint
-from alpha_dl.utils.torch_utils import get_opset_version
 
 MIN_SHAPE = (1, 3, 32, 32)
 OPT_SHAPE = (1, 3, 128, 128)
@@ -56,22 +54,28 @@ def get_opts() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def get_opset_version() -> int:
+    return max(int(k[14:]) for k in vars(torch.onnx) if "symbolic_opset" in k) - 1
+
+
 def convert_torch_to_trt(torch_path: Union[Path, str], trt_path: Union[Path, str] = None, workspace: int = 4, half: bool = False) -> None:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if device.type != "cuda":
         raise RuntimeError("TensorRT requires a CUDA-enabled GPU.")
-    torch_model = load_checkpoint(torch_path)[0].to(device)
-    if half:
-        torch_model.half()
+    model = torch.load(torch_path, map_location=device, weights_only=False)["model"].eval()
 
     # Export to ONNX.
     onnx_path = Path(torch_path).with_suffix(".onnx")
     LOGGER.info(f"Exporting ONNX model to {onnx_path}...")
     input_tensor = torch.randn(OPT_SHAPE).cuda()
-    output_tensor = torch_model(input_tensor)
+    if half:
+        model.half()
+        input_tensor = input_tensor.half()
+
+    output_tensor = model(input_tensor)
     upsale_factor = int(output_tensor.shape[-1] / input_tensor.shape[-1])
     torch.onnx.export(
-        torch_model,
+        model,
         input_tensor,
         onnx_path,
         opset_version=get_opset_version(),
