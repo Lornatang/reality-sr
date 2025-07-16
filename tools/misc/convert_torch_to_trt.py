@@ -59,7 +59,7 @@ def get_opts() -> argparse.Namespace:
         "--max-shape",
         type=str,
         default="(4, 3, 512, 512)",
-        help="Maximum input shape for dynamic axes (NCHW). Defaults to (4, 3, 512, 512)``."
+        help="Maximum input shape for dynamic axes (NCHW). Defaults to ``(4, 3, 512, 512)``."
     )
     parser.add_argument(
         "--half",
