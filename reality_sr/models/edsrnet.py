@@ -35,18 +35,11 @@ class EDSRNet(nn.Module):
             channels: int = 64,
             num_rcb: int = 16,
             upscale_factor: int = 4,
-            image_range: float = 255.,
-            mean: Tensor = None,
     ) -> None:
-        super(EDSRNet, self).__init__()
+        super().__init__()
         assert upscale_factor in (2, 3, 4), "Upscale factor should be 2, 3 or 4."
 
         self.upscale_factor = upscale_factor
-        if mean is not None:
-            self.mean = torch.tensor(mean).view(1, 3, 1, 1)
-        else:
-            self.mean = torch.tensor([0.4488, 0.4371, 0.4040]).view(1, 3, 1, 1)
-        self.image_range = image_range
 
         # First layer
         self.conv_1 = nn.Conv2d(in_channels, channels, 3, stride=1, padding=1)
@@ -75,18 +68,12 @@ class EDSRNet(nn.Module):
         initialize_weights(self.modules())
 
     def forward(self, x: Tensor) -> Tensor:
-        self.mean = self.mean.type_as(x)
-        self.mean = self.mean.to(x.device)
-
-        x = x.sub_(self.mean).mul_(self.image_range)
-
         conv_1 = self.conv_1(x)
         x = self.trunk(conv_1)
         x = self.conv_2(x)
         x = torch.add(x, conv_1)
         x = self.up_sampling(x)
         x = self.conv_3(x)
-        x = x.div_(self.image_range).add_(self.mean)
         return torch.clamp_(x, 0.0, 1.0)
 
 
