@@ -82,9 +82,9 @@ def get_opset_version() -> int:
     return max(int(k[14:]) for k in vars(torch.onnx) if "symbolic_opset" in k) - 1
 
 
-def convert_torch_to_trt(
+def convert_torch_to_tensorrt(
         torch_path: Union[Path, str],
-        trt_path: Union[Path, str] = None,
+        tensorrt_path: Union[Path, str] = None,
         workspace: int = 4,
         min_shape: Tuple[int, int, int, int] = (1, 3, 16, 16),
         opt_shape: Tuple[int, int, int, int] = (1, 3, 128, 128),
@@ -121,9 +121,9 @@ def convert_torch_to_trt(
     )
 
     # Export to TensorRT.
-    if trt_path is None:
-        trt_path = Path(torch_path).with_suffix(".engine")
-    LOGGER.info(f"Building TensorRT engine to {trt_path}...")
+    if tensorrt_path is None:
+        tensorrt_path = Path(torch_path).with_suffix(".engine")
+    LOGGER.info(f"Building TensorRT engine to {tensorrt_path}...")
 
     # Builder configuration.
     logger = trt.Logger(trt.Logger.INFO)
@@ -167,15 +167,15 @@ def convert_torch_to_trt(
     if serialized_engine is None:
         raise RuntimeError("Failed to build TensorRT engine")
 
-    with open(trt_path, "wb") as f:
+    with open(tensorrt_path, "wb") as f:
         f.write(serialized_engine)
-    LOGGER.info(f"TensorRT engine saved to {trt_path} successfully!")
+    LOGGER.info(f"TensorRT engine saved to {tensorrt_path} successfully!")
 
 
 def main() -> None:
     opts = get_opts()
 
-    convert_torch_to_trt(opts.torch_path, opts.trt_path, opts.workspace, opts.min_shape, opts.opt_shape, opts.max_shape, opts.half)
+    convert_torch_to_tensorrt(opts.torch_path, opts.trt_path, opts.workspace, opts.min_shape, opts.opt_shape, opts.max_shape, opts.half)
 
 
 if __name__ == "__main__":
