@@ -41,7 +41,7 @@ def get_opts() -> argparse.Namespace:
         "--workspace",
         type=int,
         default=4,
-        help="Workspace size in GB for TensorRT. Defaults to 4"
+        help="Workspace size in GB for TensorRT. Defaults to 4."
     )
     parser.add_argument(
         "--min-shape",
