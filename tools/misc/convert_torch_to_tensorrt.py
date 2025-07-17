@@ -112,10 +112,10 @@ def convert_torch_to_tensorrt(
         onnx_path,
         opset_version=get_opset_version(),
         do_constant_folding=True,
-        input_names=["input0"],
+        input_names=["images"],
         output_names=["output0"],
         dynamic_axes={
-            "input0": {0: "batch_size", 2: "height", 3: "width"},
+            "images": {0: "batch_size", 2: "height", 3: "width"},
             "output0": {0: "batch_size", 2: f"height*{upsale_factor}", 3: f"width*{upsale_factor}"}
         }
     )
@@ -160,7 +160,7 @@ def convert_torch_to_tensorrt(
 
     # Add optimization profile for dynamic shapes.
     profile = builder.create_optimization_profile()
-    profile.set_shape("input0", min=min_shape, opt=opt_shape, max=max_shape)
+    profile.set_shape("images", min=min_shape, opt=opt_shape, max=max_shape)
     config.add_optimization_profile(profile)
 
     serialized_engine = builder.build_serialized_network(network, config)
