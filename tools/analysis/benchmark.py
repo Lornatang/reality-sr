@@ -6,7 +6,7 @@ import torch
 from tabulate import tabulate
 from tqdm import tqdm
 
-from alpha_sr.models import *
+from alpha_sr.models.rrdbnet import rrdbnet_x2, rrdbnet_n16_x2
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 LOGGER = logging.getLogger(__name__)
@@ -75,8 +75,8 @@ def main() -> None:
     dtype = torch.half
 
     model_list = [
-        {"name": "rrdbnet_n23_x2", "model": RRDBNet(num_rrdb=23, upscale_factor=2).to(device)},
-        {"name": "rrdbnet_n16_x2", "model": RRDBNet(num_rrdb=16, upscale_factor=2).to(device)},
+        {"name": "rrdbnet_n23_x2", "model": rrdbnet_x2().to(device)},
+        {"name": "rrdbnet_n16_x2", "model": rrdbnet_n16_x2().to(device)},
     ]
 
     results = []
