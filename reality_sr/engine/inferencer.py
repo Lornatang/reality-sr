@@ -19,7 +19,7 @@ from typing import List, Union
 import numpy as np
 import tensorrt as trt
 import torch
-from alpha_dl.utils.events import LOGGER
+from reality_sr.utils.events import LOGGER
 from torch import nn
 
 __all__ = [
