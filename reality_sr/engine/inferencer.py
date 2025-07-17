@@ -72,15 +72,15 @@ class TensorRTInferencer(nn.Module):
         self.binding_address = OrderedDict((n, data.ptr) for n, data in self.bindings.items())
 
     def forward(self, x: torch.Tensor) -> Union[torch.Tensor, List[torch.Tensor]]:
-        if x.shape != self.bindings["input0"].shape:
-            self.context.set_input_shape("input0", x.shape)
-            self.bindings["input0"] = self.bindings["input0"]._replace(shape=x.shape)
+        if x.shape != self.bindings["images"].shape:
+            self.context.set_input_shape("images", x.shape)
+            self.bindings["images"] = self.bindings["images"]._replace(shape=x.shape)
             for name in self.output_names:
                 self.bindings[name].data.resize_(tuple(self.context.get_tensor_shape(name)))
 
-        shape = self.bindings["input0"].shape
+        shape = self.bindings["images"].shape
         assert x.shape == shape, f"input size {x.shape} > max model size {shape}"
-        self.binding_address["input0"] = int(x.data_ptr())
+        self.binding_address["images"] = int(x.data_ptr())
         self.context.execute_v2(list(self.binding_address.values()))
         if len(self.output_names) == 1:
             return self.bindings[self.output_names[0]].data
