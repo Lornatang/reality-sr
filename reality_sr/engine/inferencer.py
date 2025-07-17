@@ -22,8 +22,12 @@ import torch
 from alpha_dl.utils.events import LOGGER
 from torch import nn
 
+__all__ = [
+    "TensorRTInferencer",
+]
 
-class TRTInferencer(nn.Module):
+
+class TensorRTInferencer(nn.Module):
     def __init__(self, trt_path: Union[Path, str], device: torch.device = torch.device("cuda:0")) -> None:
         super().__init__()
         logger = trt.Logger(trt.Logger.WARNING)
@@ -73,6 +77,7 @@ class TRTInferencer(nn.Module):
             self.bindings["input0"] = self.bindings["input0"]._replace(shape=x.shape)
             for name in self.output_names:
                 self.bindings[name].data.resize_(tuple(self.context.get_tensor_shape(name)))
+
         shape = self.bindings["input0"].shape
         assert x.shape == shape, f"input size {x.shape} > max model size {shape}"
         self.binding_address["input0"] = int(x.data_ptr())
@@ -81,4 +86,3 @@ class TRTInferencer(nn.Module):
             return self.bindings[self.output_names[0]].data
         else:
             return [self.bindings[x].data for x in sorted(self.output_names)]
-
