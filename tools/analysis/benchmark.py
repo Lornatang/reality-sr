@@ -6,7 +6,7 @@ import torch
 from tabulate import tabulate
 from tqdm import tqdm
 
-from alpha_sr.models.rrdbnet import rrdbnet_x2
+from reality_sr.models.rrdbnet import rrdbnet_x2
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 LOGGER = logging.getLogger(__name__)
