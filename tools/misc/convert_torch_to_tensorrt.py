@@ -40,9 +40,9 @@ def get_opts() -> argparse.Namespace:
     )
     parser.add_argument(
         "--min-shape",
-        default="(1, 3, 16, 16)",
+        default="(1, 3, 128, 128)",
         type=str,
-        help="Minimum input shape for dynamic axes (NCHW). Defaults to ``(1, 3, 16, 16)``."
+        help="Minimum input shape for dynamic axes (NCHW). Defaults to ``(1, 3, 128, 128)``."
     )
     parser.add_argument(
         "--opt-shape",
@@ -52,9 +52,9 @@ def get_opts() -> argparse.Namespace:
     )
     parser.add_argument(
         "--max-shape",
-        default="(32, 3, 256, 256)",
+        default="(32, 3, 128, 128)",
         type=str,
-        help="Maximum input shape for dynamic axes (NCHW). Defaults to ``(32, 3, 256, 256)``."
+        help="Maximum input shape for dynamic axes (NCHW). Defaults to ``(32, 3, 128, 128)``."
     )
     parser.add_argument(
         "--device",
@@ -82,9 +82,9 @@ def get_opts() -> argparse.Namespace:
 def convert_torch_to_tensorrt(
         torch_path: Union[Path, str],
         tensorrt_path: Union[Path, str] = None,
-        min_shape: Tuple[int, int, int, int] = (1, 3, 16, 16),
+        min_shape: Tuple[int, int, int, int] = (1, 3, 128, 128),
         opt_shape: Tuple[int, int, int, int] = (8, 3, 128, 128),
-        max_shape: Tuple[int, int, int, int] = (32, 3, 256, 256),
+        max_shape: Tuple[int, int, int, int] = (32, 3, 128, 128),
         half: bool = False,
 ) -> None:
     torch_path = Path(torch_path)
