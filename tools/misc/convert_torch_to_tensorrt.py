@@ -40,26 +40,32 @@ def get_opts() -> argparse.Namespace:
     )
     parser.add_argument(
         "--min-shape",
-        type=str,
         default="(1, 3, 16, 16)",
+        type=str,
         help="Minimum input shape for dynamic axes (NCHW). Defaults to ``(1, 3, 16, 16)``."
     )
     parser.add_argument(
         "--opt-shape",
+        default="(8, 3, 128, 128)",
         type=str,
-        default="(4, 3, 128, 128)",
         help="Optimal input shape for dynamic axes (NCHW). Defaults to ``(8, 3, 128, 128)``."
     )
     parser.add_argument(
         "--max-shape",
-        type=str,
         default="(32, 3, 256, 256)",
+        type=str,
         help="Maximum input shape for dynamic axes (NCHW). Defaults to ``(32, 3, 256, 256)``."
+    )
+    parser.add_argument(
+        "--device",
+        default="cuda:0",
+        type=str,
+        help="Device to run the model on. Defaults to ``cuda:0`` if available, otherwise CPU."
     )
     parser.add_argument(
         "--half",
         action="store_true",
-        help="Enable fp17 precision for tensorrt."
+        help="Enable fp16 precision for tensorrt."
     )
     opts = parser.parse_args()
 
@@ -77,22 +83,21 @@ def convert_torch_to_tensorrt(
         torch_path: Union[Path, str],
         tensorrt_path: Union[Path, str] = None,
         min_shape: Tuple[int, int, int, int] = (1, 3, 16, 16),
-        opt_shape: Tuple[int, int, int, int] = (1, 3, 128, 128),
-        max_shape: Tuple[int, int, int, int] = (1, 3, 512, 512),
+        opt_shape: Tuple[int, int, int, int] = (8, 3, 128, 128),
+        max_shape: Tuple[int, int, int, int] = (32, 3, 256, 256),
         half: bool = False,
 ) -> None:
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    if device.type != "cuda":
-        raise RuntimeError("TensorRT requires a CUDA-enabled GPU.")
+    torch_path = Path(torch_path)
+    tensorrt_path = Path(tensorrt_path)
 
-    if tensorrt_path:
-        tensorrt_path = Path(tensorrt_path)
-        tensorrt_path.parent.mkdir(parents=True, exist_ok=True)
-    else:
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA is not available. TensorRT requires a CUDA-enabled GPU.")
+
+    if tensorrt_path is None:
         tensorrt_path = Path(torch_path).with_suffix(".engine")
-
+    tensorrt_path.parent.mkdir(parents=True, exist_ok=True)
     LOGGER.info(f"Exporting '{torch_path.resolve()}' model to '{tensorrt_path.resolve()}'...")
-    model = torch.load(torch_path, map_location=device, weights_only=False)["model"].eval()
+    model = torch.load(torch_path, map_location=torch.device("cpu"), weights_only=False)["model"].cuda().eval()
 
     if half:
         model.half()
