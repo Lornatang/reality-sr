@@ -67,7 +67,7 @@ def get_opts() -> argparse.Namespace:
 def convert_onnx_to_tensorrt(
         onnx_path: Union[Path, str],
         tensorrt_path: Union[Path, str] = None,
-        input_shape: Tuple[int, int, int, int] = (1, 3, 88, 137),
+        input_shape: Tuple[int, int, int, int] = (1, 3, 64, 64),
         workspace: int = 4,
         half: bool = False,
 ) -> None:
