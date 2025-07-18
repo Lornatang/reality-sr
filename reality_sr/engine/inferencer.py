@@ -131,8 +131,6 @@ class TensorRTInferencer(nn.Module):
     def process_image(self, input_path: Union[str, Path], output_path: Union[str, Path]) -> None:
         input_tensor = self.preprocess(input_path)
         output_tensor = self.inference(input_tensor)
-        if isinstance(output_tensor, list):
-            output_tensor = output_tensor[0]
         output_image = self.postprocess(output_tensor)
         cv2.imwrite(str(output_path), output_image)
         LOGGER.info(f"Image saved to '{output_path}'.")
