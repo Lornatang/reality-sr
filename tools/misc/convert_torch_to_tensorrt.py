@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Copyright (c) AlphaBetter. All rights reserved.
 import argparse
 import ast
 import logging
@@ -106,9 +105,15 @@ def convert_torch_to_tensorrt(
         min_shape=min_shape,
         opt_shape=opt_shape,
         max_shape=max_shape,
-        dtype=torch.half if half else torch.float32,
+        dtype=torch.float16 if half else torch.float32,
     )
-    tensorrt_engine = torch_tensorrt.compile(model, ir="dynamo", inputs=inputs)
+    tensorrt_engine = torch_tensorrt.compile(
+        model,
+        ir="dynamo",
+        inputs=inputs,
+        multi_device_safe_mode=True,
+        enabled_precisions={torch_tensorrt.dtype.half} if half else {torch_tensorrt.dtype.float},
+    )
     torch_tensorrt.save(tensorrt_engine, str(tensorrt_path), inputs=inputs)
     LOGGER.info(f"TensorRT engine saved to '{tensorrt_path.resolve()}'!")
 
