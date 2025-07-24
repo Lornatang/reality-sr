@@ -87,7 +87,11 @@ def convert_torch_to_tensorrt(
         half: bool = False,
 ) -> None:
     torch_path = Path(torch_path)
-    tensorrt_path = Path(tensorrt_path)
+
+    if tensorrt_path is None:
+        tensorrt_path = Path(torch_path).with_suffix(".engine")
+    else:
+        tensorrt_path = Path(tensorrt_path)
 
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is not available. TensorRT requires a CUDA-enabled GPU.")
@@ -126,3 +130,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
